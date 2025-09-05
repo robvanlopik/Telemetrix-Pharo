@@ -7,7 +7,8 @@ Class {
 		'running',
 		'messageStream',
 		'announcer',
-		'dispatchDict'
+		'dispatchDict',
+		'listenerProcess'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -15,6 +16,14 @@ Class {
 
 { #category : 'as yet unclassified' }
 TMXListener >> annopunceAnalogInput: data [
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceDHTReport: data [
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceDebugPrint: data [
 ]
 
 { #category : 'as yet unclassified' }
@@ -26,11 +35,50 @@ TMXListener >> announceFirmwareReport: data [
 ]
 
 { #category : 'as yet unclassified' }
+TMXListener >> announceI2CReadReport: data [
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceI2CTooFewBytesRcvd: data [
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceI2CTooManyBytesRcvd: data [
+]
+
+{ #category : 'as yet unclassified' }
 TMXListener >> announceIAMHere: data [
 ]
 
 { #category : 'as yet unclassified' }
+TMXListener >> announceIMUReport: data [
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceLoopbackReport: data [
+	"messageID = 0 , not in docs!!"
+	announcer announce: (TMXLoopbackEvent new data: (data at: 1))
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceMicrophoneReport: data [
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceSPIReport: data [
+]
+
+{ #category : 'as yet unclassified' }
 TMXListener >> announceServoUnavailable: data [
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceSonarDistance: data [
+]
+
+{ #category : 'accessing' }
+TMXListener >> announcer [
+	^announcer
 ]
 
 { #category : 'dispatching' }
@@ -86,11 +134,13 @@ TMXListener >> listen [
 	"the main loop. Listen to incoming data and dispatch accorinng to message id"
 	| buffer messageSize|
 	
-	buffer := ByteArray new.
 	
+	'I am listening' traceCr.
 	[  running ] whileTrue: [ 
-		[messageStream isDataAvailable] whileFalse: [ 1 seconds wait ]. "is is reasonalbe, as the timestamp has the same resolution"
+		[messageStream isDataAvailable] whileFalse: [ 1 seconds wait. 'Waiting...' traceCr]. "is is reasonalbe, as the timestamp has the same resolution"
 		messageSize := messageStream next.
+		    'got something ' trace. messageSize printString traceCr.
+		buffer := ByteArray new: messageSize.
 		messageStream next: messageSize into: buffer.
 		self dispatch: buffer.
 		 ] 
@@ -106,4 +156,24 @@ TMXListener >> port [
 TMXListener >> port: anObject [
 
 	port := anObject
+]
+
+{ #category : 'accessing' }
+TMXListener >> start [
+	
+	messageStream isConnected ifFalse: [ messageStream := nil ].
+	messageStream binary.
+	running := true.
+	listenerProcess := [ self listen]
+			forkAt: Processor lowIOPriority named: 'TMX listener'
+]
+
+{ #category : 'accessing' }
+TMXListener >> stop [ 
+	running := false
+]
+
+{ #category : 'instance creation' }
+TMXListener >> withStream: aStream [
+	messageStream := aStream
 ]

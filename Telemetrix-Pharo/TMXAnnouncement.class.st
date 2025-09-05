@@ -11,3 +11,15 @@ Class {
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
 }
+
+{ #category : 'accessing' }
+TMXAnnouncement >> timestamp [
+
+	^ timestamp
+]
+
+{ #category : 'accessing' }
+TMXAnnouncement >> timestamp: anObject [
+
+	timestamp := anObject
+]

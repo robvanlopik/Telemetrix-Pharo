@@ -5,7 +5,8 @@ Class {
 		'ip',
 		'port',
 		'commandStream',
-		'announcer'
+		'listener',
+		'dispatchDict'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -25,15 +26,41 @@ TMXDriver class >> onIP: anIPString port: aPortNumber [
 		yourself
 ]
 
-{ #category : 'testing' }
+{ #category : 'pin modes' }
+TMXDriver >> beAnalogInputOnPin: aPin [
+"this uses the analog pin number 0=4 !"
+	self beAnalogInputOnPin: aPin differential: 0
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> beAnalogInputOnPin: aPin differential: aByte [
+"this uses the analog pin number 0=4 !"
+
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> beAnalogOutputOnPin: aPin [
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> beDHTOnPin: aPin [
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> beDigitalInputPullupOnPin: aPin [
+]
+
+{ #category : 'pin modes' }
 TMXDriver >> beDigitalOutputOnPin: aPin [
-	"def set_pin_mode_digital_output(self, pin_number)
-	command = 1 ermode and mode=1 output "
-	"check for legal pin numbers!!"
-	| buffer |
-	
-	buffer := ByteArray with: 1 with:aPin with:1.
-	self sendCommand: buffer
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> beServoOutputOnPin: aPin [
+]
+
+{ #category : 'accessing' }
+TMXDriver >> commandStream [
+	^commandStream
 ]
 
 { #category : 'initialize-release' }
@@ -59,11 +86,65 @@ TMXDriver >> connectOnIP: anIPString port: aPortNumber [
 		
 ]
 
+{ #category : 'io protocols' }
+TMXDriver >> digitalValue: oneOrZero intoPin: aPin [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> disableAllReporting [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> disableAnalogReporting [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> disableDigitalReporting [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> enableAnalogReporting [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> enableDigitalReporting [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> i2cRead [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> i2cReadRestartTransmission [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> i2cWrite [
+]
+
 { #category : 'initialization' }
 TMXDriver >> initialize [ 
 
 	super initialize.
-	announcer := Announcer new
+	
+	dispatchDict := {
+		(0 -> #announceLoopbackReport:).
+		(2 -> #announceDigitalInput:). 
+		(3 -> #annopunceAnalogInput:).
+		(5 -> #announceFirmwareReport:).
+		(6 -> #announceIAMHere:).
+		(7 -> #announceServoUnavailable:).
+		(8 -> #announceI2CTooFewBytesRcvd: ).
+		(9 -> #announceI2CTooManyBytesRcvd:).
+		(10 -> #announceI2CReadReport:).
+		(11 -> #announceSonarDistance:).
+		(12 -> #announceIMUReport).
+		(13 -> #announceMicrophoneReport:).
+		(14 -> #announceDHTReport:).
+		(15 -> #announceSPIReport:)	.
+		(99 -> #announceDebugPrint:).
+		}.
+
 ]
 
 { #category : 'accessing' }
@@ -85,6 +166,60 @@ TMXDriver >> isConnected [
 ]
 
 { #category : 'accessing' }
+TMXDriver >> listener [
+	^listener
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> loopback: aByte [
+	"send aByte. It should be returned in an TMXLoopbackEvent"
+	
+	| buffer |
+	buffer := ByteArray with: 0 with: aByte.
+	self sendCommand: buffer
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> neopixelClear [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> neopixelFill [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> neopixelSetValue [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> neopixelShow [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> openI2C [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> openIMU [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> openMichrophone [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> openNeopixel [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> openSPI [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> openSonar [
+]
+
+{ #category : 'accessing' }
 TMXDriver >> port [
 
 	^ port
@@ -96,10 +231,68 @@ TMXDriver >> port: anObject [
 	port := anObject
 ]
 
+{ #category : 'io protocols' }
+TMXDriver >> pwmValue: aNumber intoPin: aPin [
+]
+
 { #category : 'testing' }
 TMXDriver >> sendCommand: aByteArray [
 	| buffer |
 	(aByteArray size > 255) ifTrue: [self halt].
 	buffer := (aByteArray size asByteArray) , aByteArray .
 	commandStream nextPutAll: buffer; flush
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> servoDetach [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> servoWrite [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> setAnalogScanInterval [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> setupLoopbackSubscription [
+	self when: TMXLoopbackEvent do: [ :ann | Transcript show: ('loopback: ', (ann data)) ]  for: self
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> shutdown [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> spiCsControl [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> spiReadBlocking [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> spiSetFormat [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> spiWriteBlocking [
+]
+
+{ #category : 'initialization' }
+TMXDriver >> startListener [ 
+	listener ifNotNil: [^self].
+	listener := (TMXListener new withStream: commandStream; yourself).
+	listener start
+]
+
+{ #category : 'protocol' }
+TMXDriver >> when: anEvent do: aBlock [ 
+	listener announcer when: anEvent do: aBlock
+]
+
+{ #category : 'protocol' }
+TMXDriver >> when: anEvent do: aBlock for: anObject [ 
+	listener announcer when: anEvent do: aBlock for: anObject
 ]
