@@ -5,8 +5,7 @@ Class {
 		'ip',
 		'port',
 		'commandStream',
-		'listener',
-		'dispatchDict'
+		'listener'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -127,24 +126,7 @@ TMXDriver >> initialize [
 
 	super initialize.
 	
-	dispatchDict := {
-		(0 -> #announceLoopbackReport:).
-		(2 -> #announceDigitalInput:). 
-		(3 -> #annopunceAnalogInput:).
-		(5 -> #announceFirmwareReport:).
-		(6 -> #announceIAMHere:).
-		(7 -> #announceServoUnavailable:).
-		(8 -> #announceI2CTooFewBytesRcvd: ).
-		(9 -> #announceI2CTooManyBytesRcvd:).
-		(10 -> #announceI2CReadReport:).
-		(11 -> #announceSonarDistance:).
-		(12 -> #announceIMUReport).
-		(13 -> #announceMicrophoneReport:).
-		(14 -> #announceDHTReport:).
-		(15 -> #announceSPIReport:)	.
-		(99 -> #announceDebugPrint:).
-		}.
-
+	
 ]
 
 { #category : 'accessing' }

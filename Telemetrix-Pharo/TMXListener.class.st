@@ -57,7 +57,7 @@ TMXListener >> announceIMUReport: data [
 { #category : 'as yet unclassified' }
 TMXListener >> announceLoopbackReport: data [
 	"messageID = 0 , not in docs!!"
-	announcer announce: (TMXLoopbackEvent new data: (data at: 1))
+	announcer announce: (TMXLoopbackEvent new data: data)
 ]
 
 { #category : 'as yet unclassified' }
@@ -99,6 +99,7 @@ TMXListener >> initialize [
 	running := false.
 	announcer := Announcer new.
 	dispatchDict := {
+		(0 -> #announceLoopbackReport:).
 		(2 -> #announceDigitalInput:). 
 		(3 -> #annopunceAnalogInput:).
 		(5 -> #announceFirmwareReport:).
@@ -113,7 +114,7 @@ TMXListener >> initialize [
 		(14 -> #announceDHTReport:).
 		(15 -> #announceSPIReport:)	.
 		(99 -> #announceDebugPrint:).
-		}.
+		} asDictionary.
 
 ]
 
@@ -137,7 +138,8 @@ TMXListener >> listen [
 	
 	'I am listening' traceCr.
 	[  running ] whileTrue: [ 
-		[messageStream isDataAvailable] whileFalse: [ 1 seconds wait. 'Waiting...' traceCr]. "is is reasonalbe, as the timestamp has the same resolution"
+		[messageStream isDataAvailable] whileFalse: [ 1 seconds wait. 'Waiting...' traceCr.
+										[ running ifFalse: [ 'stopping' traceCr. ^self ] ]]. "is is reasonalbe, as the timestamp has the same resolution"
 		messageSize := messageStream next.
 		    'got something ' trace. messageSize printString traceCr.
 		buffer := ByteArray new: messageSize.
@@ -161,11 +163,14 @@ TMXListener >> port: anObject [
 { #category : 'accessing' }
 TMXListener >> start [
 	
+"	messageStream := SocketStream openConnectionToHostNamed: ip port: port."
+	
+
 	messageStream isConnected ifFalse: [ messageStream := nil ].
-	messageStream binary.
+	"messageStream binary. zou hij l moeten zijn"
 	running := true.
 	listenerProcess := [ self listen]
-			forkAt: Processor lowIOPriority named: 'TMX listener'
+			forkAt: Processor lowIOPriority named: 'TMX listene'
 ]
 
 { #category : 'accessing' }
