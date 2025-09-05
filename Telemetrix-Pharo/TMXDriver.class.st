@@ -32,29 +32,81 @@ TMXDriver >> beAnalogInputOnPin: aPin [
 ]
 
 { #category : 'pin modes' }
-TMXDriver >> beAnalogInputOnPin: aPin differential: aByte [
-"this uses the analog pin number 0=4 !"
-
+TMXDriver >> beAnalogInputOnPin: aPin differential: anInt [
+"this uses the analog pin number 0=4 ! Mode = 3
+anInt can be more than 8 bits"
+	| command |
+	command := ByteArray with: 1 with: aPin with: 3 with: (anInt >> 8) with: (anInt bitAnd: 16rFF).
+	self sendCommand: command
 ]
 
 { #category : 'pin modes' }
 TMXDriver >> beAnalogOutputOnPin: aPin [
+" actually this is pwm output"
+	self bePWMOutputOnPin: aPin
 ]
 
 { #category : 'pin modes' }
 TMXDriver >> beDHTOnPin: aPin [
+	"DHT_NEW mode is 31"
+	| command |
+	
+	command := ByteArray with: 31 with: aPin.
+	self sendCommand: command
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> beDigitalInputOnPin: aPin [
+	"mode = 0. Note that a differential of 1 is added"
+		| command |
+		
+	command := ByteArray with: 1 with: aPin with: 0 with: 1.
+	self sendCommand: command
 ]
 
 { #category : 'pin modes' }
 TMXDriver >> beDigitalInputPullupOnPin: aPin [
+	"mode = 2. Note that a differential of 1 is added"
+		| command |
+		
+	command := ByteArray with: 1 with: aPin with: 2 with: 1.
+	self sendCommand: command
 ]
 
 { #category : 'pin modes' }
 TMXDriver >> beDigitalOutputOnPin: aPin [
+	"mode = 1"
+		| command |
+	
+	command := ByteArray with: 1 with: aPin with: 1.
+	self sendCommand: command
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> bePWMOutputOnPin: aPin [
+	"TMX calls this analog output"
+	| command |
+	
+	command := ByteArray with: 1 with: aPin with: 1.
+	self sendCommand: command
 ]
 
 { #category : 'pin modes' }
 TMXDriver >> beServoOutputOnPin: aPin [
+	"pulses in microseconds)"
+	self beServoOutputOnPin: aPin minPulse: 544  maxPulse: 2400
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> beServoOutputOnPin: aPin minPulse: int1 maxPulse: int2 [
+	"mode = servo_attach = 7 with m,in en max pulse length
+	minPulse eand maxPulse as 16 bits number, bigendian (if I am right.."
+	| command |
+	
+	command := ByteArray with: 7 with: aPin with: (int1 bitAnd: 16rFF00) with: (int1 bitAnd: 16rFF)
+														with: (int2 bitAnd: 16rFF00) with: (int2 bitAnd: 16rFF).
+	self sendCommand: command
+	
 ]
 
 { #category : 'accessing' }
@@ -87,6 +139,11 @@ TMXDriver >> connectOnIP: anIPString port: aPortNumber [
 
 { #category : 'io protocols' }
 TMXDriver >> digitalValue: oneOrZero intoPin: aPin [
+	"digital_write = 2"
+	| command |
+	
+	command := ByteArray with: 2 with: aPin with: oneOrZero .
+	self sendCommand: command
 ]
 
 { #category : 'as yet unclassified' }
