@@ -159,7 +159,13 @@ TMXDriver >> disableDigitalReporting [
 ]
 
 { #category : 'as yet unclassified' }
-TMXDriver >> enableAnalogReporting [
+TMXDriver >> enableAnalogReportingOnPin: aPin [
+	"MODIFY_REPORTING = 4
+	REPORTING_ANALOG_ENABLE = 1"
+	| command |
+	command := ByteArray with: 4 with: 1 with: aPin.
+	self sendCommand: command
+
 ]
 
 { #category : 'as yet unclassified' }
@@ -295,8 +301,24 @@ TMXDriver >> setAnalogScanInterval [
 ]
 
 { #category : 'as yet unclassified' }
+TMXDriver >> setupAnalogInputSubscription [
+	self when: TMXAnalogInputEvent do: [ :ann |
+			('analog pin: ', (ann pinNr printString), ' became ', (ann pinValue printString), 
+										' at ', (ann timestamp printString )) traceCr] for: self. 
+	
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> setupDigitalInputSubscription [
+	self when: TMXDigitalInputEvent do: [ :ann |
+			('digital pin: ', (ann pinNr printString), ' became ', (ann pinValue printString), 
+										' at ', (ann timestamp printString )) traceCr] for: self. 
+	
+]
+
+{ #category : 'as yet unclassified' }
 TMXDriver >> setupLoopbackSubscription [
-	self when: TMXLoopbackEvent do: [ :ann | Transcript show: ('loopback: ', (ann data)) ]  for: self
+	self when: TMXLoopbackEvent do: [ :ann | ('loopback: ', (ann data) traceCr) ]  for: self
 ]
 
 { #category : 'as yet unclassified' }

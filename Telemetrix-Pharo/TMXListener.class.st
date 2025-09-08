@@ -15,7 +15,14 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-TMXListener >> annopunceAnalogInput: data [
+TMXListener >> announceAnalogInput: data [
+	| announcement |
+	announcement := TMXAnalogInputEvent new 
+							pinNr: (data at: 1);
+							pinValue: (data at: 2) *256 + (data at: 3);
+							timestamp: DateAndTime now;
+							yourself.
+	self forkAnnouncement: announcement
 ]
 
 { #category : 'as yet unclassified' }
@@ -28,6 +35,13 @@ TMXListener >> announceDebugPrint: data [
 
 { #category : 'as yet unclassified' }
 TMXListener >> announceDigitalInput: data [
+	| announcement |
+	announcement := TMXDigitalInputEvent new 
+							pinNr: (data at: 1);
+							pinValue: (data at: 2);
+							timestamp: DateAndTime now;
+							yourself.
+	self forkAnnouncement: announcement
 ]
 
 { #category : 'as yet unclassified' }
@@ -57,7 +71,7 @@ TMXListener >> announceIMUReport: data [
 { #category : 'as yet unclassified' }
 TMXListener >> announceLoopbackReport: data [
 	"messageID = 0 , not in docs!!"
-	announcer announce: (TMXLoopbackEvent new data: data)
+	self forkAnnouncement: (TMXLoopbackEvent new data: data; timestamp: DateAndTime now; yourself)
 ]
 
 { #category : 'as yet unclassified' }
@@ -72,7 +86,7 @@ TMXListener >> announceSPIReport: data [
 TMXListener >> announceServoUnavailable: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'events-processing' }
 TMXListener >> announceSonarDistance: data [
 ]
 
@@ -92,6 +106,12 @@ TMXListener >> dispatch: aBuffer [
 	self perform: action with: data.
 ]
 
+{ #category : 'events-processing' }
+TMXListener >> forkAnnouncement: anAnnouncement [
+	"as the acitions of a subscriber are performed in the context of the announcing thread, the can hold up further announcments from the listener. Therefore all anouncements are made in new processes and run at priority userInterrupPriority (=50)"
+	[ announcer announce: anAnnouncement ] forkAt: Processor userInterruptPriority 
+]
+
 { #category : 'initialization' }
 TMXListener >> initialize [ 
 
@@ -101,7 +121,7 @@ TMXListener >> initialize [
 	dispatchDict := {
 		(0 -> #announceLoopbackReport:).
 		(2 -> #announceDigitalInput:). 
-		(3 -> #annopunceAnalogInput:).
+		(3 -> #announceAnalogInput:).
 		(5 -> #announceFirmwareReport:).
 		(6 -> #announceIAMHere:).
 		(7 -> #announceServoUnavailable:).
@@ -138,14 +158,14 @@ TMXListener >> listen [
 	
 	'I am listening' traceCr.
 	[  running ] whileTrue: [ 
-		[messageStream isDataAvailable] whileFalse: [ 1 seconds wait. 'Waiting...' traceCr.
-										[ running ifFalse: [ 'stopping' traceCr. ^self ] ]]. "is is reasonalbe, as the timestamp has the same resolution"
+		[messageStream isDataAvailable] whileFalse: [ 1 seconds wait].		
+					 "is is reasonalbe, as the timestamp has the same resolution (but the analog loop is 19 ms!"
 		messageSize := messageStream next.
-		    'got something ' trace. messageSize printString traceCr.
+		    'got something ' trace. messageSize printString trace.
 		buffer := ByteArray new: messageSize.
 		messageStream next: messageSize into: buffer.
-		self dispatch: buffer.
-		 ] 
+		(' code: ', (buffer first printString)) traceCr.
+		self dispatch: buffer].
 ]
 
 { #category : 'accessing' }
