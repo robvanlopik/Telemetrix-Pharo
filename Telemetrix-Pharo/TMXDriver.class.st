@@ -5,7 +5,8 @@ Class {
 		'ip',
 		'port',
 		'commandStream',
-		'listener'
+		'listener',
+		'forkAnnouncements'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -27,8 +28,9 @@ TMXDriver class >> onIP: anIPString port: aPortNumber [
 
 { #category : 'pin modes' }
 TMXDriver >> beAnalogInputOnPin: aPin [
-"this uses the analog pin number 0=4 !"
-	self beAnalogInputOnPin: aPin differential: 0
+"this uses the analog pin number 0=4 !
+we set the default differential to 2 to avoid excessive event numbers"
+	self beAnalogInputOnPin: aPin differential: 2
 ]
 
 { #category : 'pin modes' }
@@ -146,12 +148,22 @@ TMXDriver >> digitalValue: oneOrZero intoPin: aPin [
 	self sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'reporting' }
 TMXDriver >> disableAllReporting [
+	"MODIFY_REPORTING = 4
+	REPORTING_DISABLE_ALL = 0"
+	| command |
+	command := ByteArray with: 4 with: 0 with: 0.
+	self sendCommand: command
 ]
 
 { #category : 'as yet unclassified' }
-TMXDriver >> disableAnalogReporting [
+TMXDriver >> disableAnalogReportingOnPin: aPin [
+	"MODIFY_REPORTING = 4"
+	"REPORTING_ANALOG_DISABLE = 3"
+	| command |
+	command := ByteArray with: 4 with: 3 with: aPin.
+	self sendCommand: command
 ]
 
 { #category : 'as yet unclassified' }
@@ -172,6 +184,16 @@ TMXDriver >> enableAnalogReportingOnPin: aPin [
 TMXDriver >> enableDigitalReporting [
 ]
 
+{ #category : 'accessing' }
+TMXDriver >> forkAnnouncements [
+	^forkAnnouncements
+]
+
+{ #category : 'accessing' }
+TMXDriver >> forkAnnouncements: aBoolean [
+	forkAnnouncements := aBoolean
+]
+
 { #category : 'as yet unclassified' }
 TMXDriver >> i2cRead [
 ]
@@ -188,6 +210,7 @@ TMXDriver >> i2cWrite [
 TMXDriver >> initialize [ 
 
 	super initialize.
+	forkAnnouncements := false.
 	
 	
 ]
@@ -300,6 +323,15 @@ TMXDriver >> servoWrite [
 TMXDriver >> setAnalogScanInterval [
 ]
 
+{ #category : 'analog io' }
+TMXDriver >> setAnalogScanInterval: aByteValue [
+	"default is 19 ms. Note that with a small differential this leads to an overload of messages
+	SET_ANALOG_SCANNING_INTERVAL = 16"
+	| command |
+	command := ByteArray with: 16 with: (aByteValue bitAnd: 16rFF).
+	self sendCommand: command
+]
+
 { #category : 'as yet unclassified' }
 TMXDriver >> setupAnalogInputSubscription [
 	self when: TMXAnalogInputEvent do: [ :ann |
@@ -344,7 +376,7 @@ TMXDriver >> spiWriteBlocking [
 { #category : 'initialization' }
 TMXDriver >> startListener [ 
 	listener ifNotNil: [^self].
-	listener := (TMXListener new withStream: commandStream; yourself).
+	listener := (TMXListener new withStream: commandStream for: self; yourself).
 	listener start
 ]
 

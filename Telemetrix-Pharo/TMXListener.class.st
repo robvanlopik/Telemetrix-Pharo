@@ -8,7 +8,8 @@ Class {
 		'messageStream',
 		'announcer',
 		'dispatchDict',
-		'listenerProcess'
+		'listenerProcess',
+		'driver'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -22,11 +23,24 @@ TMXListener >> announceAnalogInput: data [
 							pinValue: (data at: 2) *256 + (data at: 3);
 							timestamp: DateAndTime now;
 							yourself.
-	self forkAnnouncement: announcement
+	self doAnnouncement: announcement
 ]
 
 { #category : 'as yet unclassified' }
 TMXListener >> announceDHTReport: data [
+"DHT_DATA = 0
+    DHT_ERROR = 1"
+	| announcement type|
+	type := data at: 1.
+	[type = 0] ifTrue: [   "data are correct" 
+		announcement := TMXAnalogInputEvent new 
+							pinNr: (data at: 1);
+							pinValue: (data at: 2) *256 + (data at: 3);
+							timestamp: DateAndTime now;
+							yourself.
+							.
+	self doAnnouncement: announcement ]
+
 ]
 
 { #category : 'as yet unclassified' }
@@ -41,7 +55,7 @@ TMXListener >> announceDigitalInput: data [
 							pinValue: (data at: 2);
 							timestamp: DateAndTime now;
 							yourself.
-	self forkAnnouncement: announcement
+	self doAnnouncement: announcement
 ]
 
 { #category : 'as yet unclassified' }
@@ -71,7 +85,7 @@ TMXListener >> announceIMUReport: data [
 { #category : 'as yet unclassified' }
 TMXListener >> announceLoopbackReport: data [
 	"messageID = 0 , not in docs!!"
-	self forkAnnouncement: (TMXLoopbackEvent new data: data; timestamp: DateAndTime now; yourself)
+	self doAnnouncement: (TMXLoopbackEvent new data: data; timestamp: DateAndTime now; yourself)
 ]
 
 { #category : 'as yet unclassified' }
@@ -107,9 +121,16 @@ TMXListener >> dispatch: aBuffer [
 ]
 
 { #category : 'events-processing' }
-TMXListener >> forkAnnouncement: anAnnouncement [
-	"as the acitions of a subscriber are performed in the context of the announcing thread, the can hold up further announcments from the listener. Therefore all anouncements are made in new processes and run at priority userInterrupPriority (=50)"
-	[ announcer announce: anAnnouncement ] forkAt: Processor userInterruptPriority 
+TMXListener >> doAnnouncement: anAnnouncement [
+	"when processing the announcement can take a long time, it is better to fork the announcement process.  On the other hand this produes more overhead wich may be prohibitive when there are many events, like in analog input with differential=0"
+	self driver forkAnnouncements ifTrue: 
+	[[ announcer announce: anAnnouncement ] forkAt: Processor userInterruptPriority ]
+ifFalse: [ announcer announce: anAnnouncement ]
+]
+
+{ #category : 'accessing' }
+TMXListener >> driver [ 
+	^driver
 ]
 
 { #category : 'initialization' }
@@ -201,4 +222,10 @@ TMXListener >> stop [
 { #category : 'instance creation' }
 TMXListener >> withStream: aStream [
 	messageStream := aStream
+]
+
+{ #category : 'instance creation' }
+TMXListener >> withStream: aStream for: aTMXDriver [
+	messageStream := aStream.
+	driver := aTMXDriver 
 ]
