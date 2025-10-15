@@ -85,6 +85,20 @@ TMXDriver >> beDigitalOutputOnPin: aPin [
 ]
 
 { #category : 'pin modes' }
+TMXDriver >> beNeopixelOutputOnPin: aPin pixelCount: anInt rFill: r gFill: g bFill: b [
+	"aPin must be  2-17,
+	r g and b bust be smaller than 256, they represent the initial color fill
+	INITIALIZE_NEO_PIXELS = 21
+	also in source: self.neopixels_initiated = True
+	maybe check all legal values"
+	| command |
+	"self.number_of_pixels = num_pixels"	
+	command := ByteArray with: 1 with: aPin with: anInt with: r with: g with: b.
+	self sendCommand: command
+	"self.neopixels_initiated = True"
+]
+
+{ #category : 'pin modes' }
 TMXDriver >> bePWMOutputOnPin: aPin [
 	"TMX calls this analog output"
 	| command |
@@ -137,6 +151,16 @@ TMXDriver >> connectOnIP: anIPString port: aPortNumber [
 	port := aPortNumber
 	
 		
+]
+
+{ #category : 'pin modes' }
+TMXDriver >> detachServoFromPin: aPin [
+	"not sure what this does
+	SERVO_DETACH = 9"
+	| command |
+	
+	command := ByteArray with: 9 with: aPin .
+	self sendCommand: command
 ]
 
 { #category : 'io protocols' }
@@ -301,6 +325,13 @@ TMXDriver >> port: anObject [
 
 { #category : 'io protocols' }
 TMXDriver >> pwmValue: aNumber intoPin: aPin [
+	"not this is called analog_write in the Python version, asis often done. This s misleading becausoe some MCU have a real ADC for analog output. Val;ue must be less than 256"
+	"ANALOG_WRITE = 3"
+	
+	| command |
+	
+	command := ByteArray with: 3 with: aPin with: aNumber .
+	self sendCommand: command
 ]
 
 { #category : 'testing' }
@@ -313,6 +344,16 @@ TMXDriver >> sendCommand: aByteArray [
 
 { #category : 'as yet unclassified' }
 TMXDriver >> servoDetach [
+]
+
+{ #category : 'io protocols' }
+TMXDriver >> servoValue: angle intoPin: aPin [
+	"SERVO_WRITE = 8, agle between 0 and 180"
+
+	| command |
+	
+	command := ByteArray with: 2 with: aPin with: angle .
+	self sendCommand: command
 ]
 
 { #category : 'as yet unclassified' }
@@ -380,12 +421,12 @@ TMXDriver >> startListener [
 	listener start
 ]
 
-{ #category : 'protocol' }
+{ #category : 'announcement handling' }
 TMXDriver >> when: anEvent do: aBlock [ 
 	listener announcer when: anEvent do: aBlock
 ]
 
-{ #category : 'protocol' }
+{ #category : 'announcement handling' }
 TMXDriver >> when: anEvent do: aBlock for: anObject [ 
 	listener announcer when: anEvent do: aBlock for: anObject
 ]
