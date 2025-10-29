@@ -6,7 +6,8 @@ Class {
 		'port',
 		'commandStream',
 		'listener',
-		'forkAnnouncements'
+		'forkAnnouncements',
+		'i2cActivated'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -24,6 +25,18 @@ TMXDriver class >> onIP: anIPString port: aPortNumber [
 	^self new
 		connectOnIP: anIPString port: aPortNumber;
 		yourself
+]
+
+{ #category : 'i2c' }
+TMXDriver >> activateI2C [
+	"activate I2C on the default pins, SDA=A4 and SCL=A5
+	Note there is no way to free the pins!
+	I2C_BEGIN = 10
+    I2C_READ = 11
+    I2C_WRITE = 12"
+
+	self sendCommand: (ByteArray with: 10).
+	i2cActivated := true
 ]
 
 { #category : 'pin modes' }
@@ -85,6 +98,24 @@ TMXDriver >> beDigitalOutputOnPin: aPin [
 ]
 
 { #category : 'pin modes' }
+TMXDriver >> beNeopixelOutputOnPin: aPin pixelCount: anInt colorFill: aColor [
+	"aPin must be  2-17,
+	r g and b bust be smaller than 256, they represent the initial color fill
+	INITIALIZE_NEO_PIXELS = 21
+	also in source: self.neopixels_initiated = True
+	maybe check all legal values
+	OR use fillColor as parameter and use the Color class"
+	| command r g b|
+	r := (aColor red * 255) rounded bitAnd: 16rFF. 
+	g := (aColor green * 255) rounded bitAnd: 16rFF.
+	b := (aColor blue * 255) rounded bitAnd: 16rFF.
+	"self.number_of_pixels = num_pixels"	
+	command := ByteArray with: 21 with: aPin with: anInt with: r with: g with: b.
+	self sendCommand: command
+	"self.neopixels_initiated = True"
+]
+
+{ #category : 'pin modes' }
 TMXDriver >> beNeopixelOutputOnPin: aPin pixelCount: anInt rFill: r gFill: g bFill: b [
 	"aPin must be  2-17,
 	r g and b bust be smaller than 256, they represent the initial color fill
@@ -119,8 +150,8 @@ TMXDriver >> beServoOutputOnPin: aPin minPulse: int1 maxPulse: int2 [
 	minPulse eand maxPulse as 16 bits number, bigendian (if I am right.."
 	| command |
 	
-	command := ByteArray with: 7 with: aPin with: (int1 bitAnd: 16rFF00) with: (int1 bitAnd: 16rFF)
-														with: (int2 bitAnd: 16rFF00) with: (int2 bitAnd: 16rFF).
+	command := ByteArray with: 7 with: aPin with: ((int1 bitAnd: 16rFF00) >> 8) with: (int1 bitAnd: 16rFF)
+														with: ((int2 bitAnd: 16rFF00) >> 8) with: (int2 bitAnd: 16rFF).
 	self sendCommand: command
 	
 ]
@@ -222,12 +253,36 @@ TMXDriver >> forkAnnouncements: aBoolean [
 TMXDriver >> i2cRead [
 ]
 
+{ #category : 'i2c' }
+TMXDriver >> i2cReadFromAdress: anAddress register: aRegister count: byteCount [
+	"read and stop transmission, ie stop_transmission = true
+	I2C_READ = 11
+	"
+	
+	i2cActivated ifTrue: [ 
+		self sendCommand: (ByteArray with: 11 with: anAddress with: aRegister with: byteCount with: 1)]
+]
+
 { #category : 'as yet unclassified' }
 TMXDriver >> i2cReadRestartTransmission [
 ]
 
-{ #category : 'as yet unclassified' }
-TMXDriver >> i2cWrite [
+{ #category : 'i2c' }
+TMXDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister count: byteCount [
+	"read and stop transmission, ie stop_transmission = false
+	I2C_READ = 11
+	"
+	
+	i2cActivated ifTrue: [ 
+		self sendCommand: (ByteArray with: 11 with: anAddress with: aRegister with: byteCount with: 0)]
+]
+
+{ #category : 'i2c' }
+TMXDriver >> i2cWrite: aDataArray toAddress: anAddress [
+	"I2C_WRITE = 12; data is a ByteAray"
+	
+	i2cActivated ifTrue:	
+	[self sendCommand: ((ByteArray with: 12 with: anAddress) , aDataArray)]
 ]
 
 { #category : 'initialization' }
@@ -271,20 +326,100 @@ TMXDriver >> loopback: aByte [
 	self sendCommand: buffer
 ]
 
-{ #category : 'as yet unclassified' }
-TMXDriver >> neopixelClear [
+{ #category : 'neopixel' }
+TMXDriver >> neopixelClearLater [
+	"clear the display but dont immediately show it"
+	"CLEAR_ALL_NEO_PIXELS = 24"
+	self sendCommand: (ByteArray with: 24 with: 0)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'neopixel' }
+TMXDriver >> neopixelClearNow [
+	"clear the display and immediately show it"
+	"CLEAR_ALL_NEO_PIXELS = 24"
+	self sendCommand: (ByteArray with: 24 with: 1)
+]
+
+{ #category : 'neopixel' }
 TMXDriver >> neopixelFill [
 ]
 
-{ #category : 'as yet unclassified' }
-TMXDriver >> neopixelSetValue [
+{ #category : 'neopixel' }
+TMXDriver >> neopixelFillLaterColor: aColor [
+	"Set all pixels to aColor, abut don't show it yet"
+	"FILL_ALL_NEO_PIXELS = 25"
+	| r g b |
+	r := (aColor red * 255) rounded bitAnd: 16rFF.
+	g := (aColor green * 255) rounded bitAnd: 16rFF.
+	b := (aColor blue * 255) rounded bitAnd: 16rFF.
+	self sendCommand: (ByteArray with: 25 with: r with: g with: b with: 0)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'neopixel' }
+TMXDriver >> neopixelFillNowColor: aColor [
+	"Set all pixels to aColor, and show it"
+	"FILL_ALL_NEO_PIXELS = 25"
+	| r g b |
+	r := (aColor red * 255) rounded bitAnd: 16rFF.
+	g := (aColor green * 255) rounded bitAnd: 16rFF.
+	b := (aColor blue * 255) rounded bitAnd: 16rFF.
+	self sendCommand: (ByteArray with: 25 with: r with: g with: b with: 1)
+]
+
+{ #category : 'neopixel' }
 TMXDriver >> neopixelShow [
+	"Write the NeoPixel buffer stored on the server to the NeoPixel device."
+	"SHOW_NEO_PIXELS = 22"
+	self sendCommand: (ByteArray with: 22)
+]
+
+{ #category : 'neopixel' }
+TMXDriver >> neopixelnr: aNumber color: aColor [
+	"set pixen number aNumber (0 - maxpixels) to rgb and default disable autoshow"
+	"SET_NEO_PIXEL = 23"
+	| auto command rValue gValue bValue|
+	auto := 0.
+	rValue := (aColor red * 255) rounded bitAnd: 16rFF. 
+	gValue := (aColor green * 255) rounded bitAnd: 16rFF.
+	bValue := (aColor blue * 255) rounded bitAnd: 16rFF.
+	command := ByteArray with: 23 with: aNumber with: rValue with: gValue with: bValue with: auto.
+	self sendCommand: command
+]
+
+{ #category : 'neopixel' }
+TMXDriver >> neopixelnr: aNumber color: aColor autoShow: boolean [
+	"set pixen number aNumber (0 - maxpixels) to rgb and enable or disable autoshow"
+	"SET_NEO_PIXEL = 23"
+	| auto command rValue gValue bValue|
+	auto := 0.
+	boolean ifTrue: [ auto := 1 ].
+	rValue := (aColor red * 255) rounded bitAnd: 16rFF. 
+	gValue := (aColor green * 255) rounded bitAnd: 16rFF.
+	bValue := (aColor blue * 255) rounded bitAnd: 16rFF.
+	command := ByteArray with: 23 with: aNumber with: rValue with: gValue with: bValue with: auto.
+	self sendCommand: command
+]
+
+{ #category : 'neopixel' }
+TMXDriver >> neopixelnr: aNumber r: rValue g: gValue b: bValue [
+	"set pixen number aNumber (0 - maxpixels) to rgb and defalt disable autoshow"
+	"SET_NEO_PIXEL = 23"
+	| auto command|
+	auto := 0.
+	
+	command := ByteArray with: 23 with: aNumber with: rValue with: gValue with: bValue with: auto.
+	self sendCommand: command
+]
+
+{ #category : 'neopixel' }
+TMXDriver >> neopixelnr: aNumber r: rValue g: gValue b: bValue autoShow: boolean [
+	"set pixen number aNumber (0 - maxpixels) to rgb and enable or disable autoshow"
+	"SET_NEO_PIXEL = 23"
+	| auto command|
+	auto := 0.
+	boolean ifTrue: [ auto := 1 ].
+	command := ByteArray with: 23 with: aNumber with: rValue with: gValue with: bValue with: auto.
+	self sendCommand: command
 ]
 
 { #category : 'as yet unclassified' }
@@ -325,7 +460,8 @@ TMXDriver >> port: anObject [
 
 { #category : 'io protocols' }
 TMXDriver >> pwmValue: aNumber intoPin: aPin [
-	"not this is called analog_write in the Python version, asis often done. This s misleading becausoe some MCU have a real ADC for analog output. Val;ue must be less than 256"
+	"note this is called analog_write in the Python version, as is often done. This is misleading becausoe
+	 some MCU's have a real ADC for analog output. Value must be less than 256"
 	"ANALOG_WRITE = 3"
 	
 	| command |
@@ -342,22 +478,26 @@ TMXDriver >> sendCommand: aByteArray [
 	commandStream nextPutAll: buffer; flush
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'pwm-servo' }
 TMXDriver >> servoDetach [
 ]
 
-{ #category : 'io protocols' }
+{ #category : 'pwm-servo' }
+TMXDriver >> servoDetachFromPin: aPin [
+	"evidently you can't just assign another mode to the pin
+	SERVO_DETACH = 9"
+	
+	self sendCommand: (ByteArray with: 9 with: aPin)
+]
+
+{ #category : 'pwm-servo' }
 TMXDriver >> servoValue: angle intoPin: aPin [
-	"SERVO_WRITE = 8, agle between 0 and 180"
+	"SERVO_WRITE = 8, angle between 0 and 180"
 
 	| command |
 	
-	command := ByteArray with: 2 with: aPin with: angle .
+	command := ByteArray with: 8 with: aPin with: angle .
 	self sendCommand: command
-]
-
-{ #category : 'as yet unclassified' }
-TMXDriver >> servoWrite [
 ]
 
 { #category : 'as yet unclassified' }

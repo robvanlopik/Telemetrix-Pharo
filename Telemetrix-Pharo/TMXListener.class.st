@@ -15,7 +15,7 @@ Class {
 	#package : 'Telemetrix-Pharo'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceAnalogInput: data [
 	| announcement |
 	announcement := TMXAnalogInputEvent new 
@@ -26,28 +26,28 @@ TMXListener >> announceAnalogInput: data [
 	self doAnnouncement: announcement
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceDHTReport: data [
 "DHT_DATA = 0
     DHT_ERROR = 1"
 	| announcement type|
 	type := data at: 1.
-	[type = 0] ifTrue: [   "data are correct" 
-		announcement := TMXAnalogInputEvent new 
-							pinNr: (data at: 1);
-							pinValue: (data at: 2) *256 + (data at: 3);
+	(type = 0) ifTrue: [   "data are correct" 
+		announcement := TMXDHTEvent new 
+							pinNr: (data at: 2);
+							pinValue: (data at: 3) *256 + (data at: 2);
 							timestamp: DateAndTime now;
 							yourself.
-							.
+							
 	self doAnnouncement: announcement ]
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceDebugPrint: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceDigitalInput: data [
 	| announcement |
 	announcement := TMXDigitalInputEvent new 
@@ -58,49 +58,49 @@ TMXListener >> announceDigitalInput: data [
 	self doAnnouncement: announcement
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceFirmwareReport: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceI2CReadReport: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceI2CTooFewBytesRcvd: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceI2CTooManyBytesRcvd: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceIAMHere: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceIMUReport: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceLoopbackReport: data [
 	"messageID = 0 , not in docs!!"
 	self doAnnouncement: (TMXLoopbackEvent new data: data; timestamp: DateAndTime now; yourself)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceMicrophoneReport: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceSPIReport: data [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceServoUnavailable: data [
 ]
 
-{ #category : 'events-processing' }
+{ #category : 'event handling' }
 TMXListener >> announceSonarDistance: data [
 ]
 
