@@ -282,7 +282,7 @@ TMXDriver >> i2cWrite: aDataArray toAddress: anAddress [
 	"I2C_WRITE = 12; data is a ByteAray"
 	
 	i2cActivated ifTrue:	
-	[self sendCommand: ((ByteArray with: 12 with: anAddress) , aDataArray)]
+	[self sendCommand: ((ByteArray with: 12 with: aDataArray size with: anAddress) , aDataArray)]
 ]
 
 { #category : 'initialization' }
@@ -526,6 +526,14 @@ TMXDriver >> setupDigitalInputSubscription [
 	self when: TMXDigitalInputEvent do: [ :ann |
 			('digital pin: ', (ann pinNr printString), ' became ', (ann pinValue printString), 
 										' at ', (ann timestamp printString )) traceCr] for: self. 
+	
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> setupI2CReadSubscription [
+	self when: TMXI2CEvent do: [ :ann |
+			('address: ', (ann address printString), ' register: ' , (ann register printString), 
+										' content ', (ann bytes printString )) traceCr] for: self. 
 	
 ]
 

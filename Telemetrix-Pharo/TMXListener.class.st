@@ -64,6 +64,16 @@ TMXListener >> announceFirmwareReport: data [
 
 { #category : 'event handling' }
 TMXListener >> announceI2CReadReport: data [
+	"the eventbuffer is I2C_READ_REPORT, count, address, register, bytes"
+	| announcement |
+	announcement := TMXI2CEvent new
+							address: (data at: 2);
+							register: (data at: 3);
+							count: (data at: 1);
+							bytes: (data allButFirst: 3);
+							timestamp: DateAndTime now;
+							yourself.
+	self doAnnouncement: announcement 
 ]
 
 { #category : 'event handling' }
