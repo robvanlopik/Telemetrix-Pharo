@@ -290,6 +290,7 @@ TMXDriver >> initialize [
 
 	super initialize.
 	forkAnnouncements := false.
+	i2cActivated := false
 	
 	
 ]
