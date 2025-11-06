@@ -20,6 +20,11 @@ TMXConstants class >> gpioFromPinNr: pinNr [
 ]
 
 { #category : 'as yet unclassified' }
+TMXConstants class >> i2cSCL [
+	^19
+]
+
+{ #category : 'as yet unclassified' }
 TMXConstants class >> i2cSDA [
 	^18
 ]
