@@ -222,7 +222,12 @@ TMXDriver >> disableAnalogReportingOnPin: aPin [
 ]
 
 { #category : 'as yet unclassified' }
-TMXDriver >> disableDigitalReporting [
+TMXDriver >> disableDigitalReportingOnPin: aPin [
+	"MODIFY_REPORTING = 4
+	REPORTING_DDIGITAL_DISABLE = 4"
+	| command |
+	command := ByteArray with: 4 with: 4 with: aPin.
+	self sendCommand: command
 ]
 
 { #category : 'as yet unclassified' }
@@ -236,7 +241,12 @@ TMXDriver >> enableAnalogReportingOnPin: aPin [
 ]
 
 { #category : 'as yet unclassified' }
-TMXDriver >> enableDigitalReporting [
+TMXDriver >> enableDigitalReportingOnPin: aPin [
+	"MODIFY_REPORTING = 4
+	REPORTING_DIGITAL_ENBLE = 2"
+	| command |
+	command := ByteArray with: 4 with: 2 with: aPin.
+	self sendCommand: command
 ]
 
 { #category : 'accessing' }
