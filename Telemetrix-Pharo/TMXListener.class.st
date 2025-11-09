@@ -73,6 +73,7 @@ TMXListener >> announceI2CReadReport: data [
 							bytes: (data allButFirst: 3);
 							timestamp: DateAndTime now;
 							yourself.
+	(driver i2cData) at: (data at: 2) put: announcement. "for synchronous use by i2cconncection)"
 	self doAnnouncement: announcement 
 ]
 

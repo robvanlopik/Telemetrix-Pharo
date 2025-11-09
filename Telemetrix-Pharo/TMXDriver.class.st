@@ -7,7 +7,8 @@ Class {
 		'commandStream',
 		'listener',
 		'forkAnnouncements',
-		'i2cActivated'
+		'i2cActivated',
+		'i2cData'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -161,6 +162,12 @@ TMXDriver >> commandStream [
 	^commandStream
 ]
 
+{ #category : 'accessing' }
+TMXDriver >> commandStream: anObject [
+
+	commandStream := anObject
+]
+
 { #category : 'initialize-release' }
 TMXDriver >> connectOnIP: anAddress [
 	"connect with default port 31335"
@@ -259,8 +266,28 @@ TMXDriver >> forkAnnouncements: aBoolean [
 	forkAnnouncements := aBoolean
 ]
 
-{ #category : 'as yet unclassified' }
-TMXDriver >> i2cRead [
+{ #category : 'accessing' }
+TMXDriver >> i2cActivated [
+
+	^ i2cActivated
+]
+
+{ #category : 'accessing' }
+TMXDriver >> i2cActivated: anObject [
+
+	i2cActivated := anObject
+]
+
+{ #category : 'accessing' }
+TMXDriver >> i2cData [
+
+	^ i2cData
+]
+
+{ #category : 'accessing' }
+TMXDriver >> i2cData: anObject [
+
+	i2cData := anObject
 ]
 
 { #category : 'i2c' }
@@ -300,7 +327,8 @@ TMXDriver >> initialize [
 
 	super initialize.
 	forkAnnouncements := false.
-	i2cActivated := false
+	i2cActivated := false.
+	i2cData := Dictionary new
 	
 	
 ]
@@ -326,6 +354,12 @@ TMXDriver >> isConnected [
 { #category : 'accessing' }
 TMXDriver >> listener [
 	^listener
+]
+
+{ #category : 'accessing' }
+TMXDriver >> listener: anObject [
+
+	listener := anObject
 ]
 
 { #category : 'as yet unclassified' }
@@ -435,6 +469,14 @@ TMXDriver >> neopixelnr: aNumber r: rValue g: gValue b: bValue autoShow: boolean
 
 { #category : 'as yet unclassified' }
 TMXDriver >> openI2C [
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> openI2C: i2cAddress [
+	"return a I2C Connection as expected by Pots.
+	Fill i2cData with a valid timestamp"
+	i2cData at: i2cAddress put: ( TMXI2CEvent new address: i2cAddress; count: 1; register: 0; bytes: #[0]; yourself ).
+	^TMXI2CConnection new address: i2cAddress; driver: self; yourself
 ]
 
 { #category : 'as yet unclassified' }
