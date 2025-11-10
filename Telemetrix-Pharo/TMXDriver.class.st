@@ -186,7 +186,8 @@ TMXDriver >> connectOnIP: anIPString port: aPortNumber [
 	commandStream binary.
 	
 	ip := anIPString.
-	port := aPortNumber
+	port := aPortNumber.
+	self startListener 
 	
 		
 ]
@@ -475,7 +476,9 @@ TMXDriver >> openI2C [
 TMXDriver >> openI2C: i2cAddress [
 	"return a I2C Connection as expected by Pots.
 	Fill i2cData with a valid timestamp"
-	i2cData at: i2cAddress put: ( TMXI2CEvent new address: i2cAddress; count: 1; register: 0; bytes: #[0]; yourself ).
+	i2cActivated ifFalse: [ self activateI2C ].
+	i2cData at: i2cAddress put: ( TMXI2CEvent new address: i2cAddress; count: 1;
+		register: 0; bytes: #[0]; timestamp: DateAndTime now; yourself ).
 	^TMXI2CConnection new address: i2cAddress; driver: self; yourself
 ]
 
