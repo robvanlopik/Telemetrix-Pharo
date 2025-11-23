@@ -483,13 +483,6 @@ TMXDriver >> openI2C: i2cAddress [
 ]
 
 { #category : 'as yet unclassified' }
-TMXDriver >> openI2CConnectionOn: address [
-
-	i2cActivated ifFalse: [ self activateI2C. i2cActivated := true ].
-	^TMXI2CConnection new i2cAddress: address; driver: self; yourself
-]
-
-{ #category : 'as yet unclassified' }
 TMXDriver >> openIMU [
 ]
 
