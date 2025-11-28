@@ -4,8 +4,9 @@ I am a helper class that contains useful constants and tests for the TMX driver
 Class {
 	#name : 'TMXConstants',
 	#superclass : 'Object',
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }
 
 { #category : 'as yet unclassified' }

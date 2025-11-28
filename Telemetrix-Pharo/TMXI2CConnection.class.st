@@ -13,8 +13,9 @@ Class {
 		'i2cAddress',
 		'driver'
 	],
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }
 
 { #category : 'accessing' }

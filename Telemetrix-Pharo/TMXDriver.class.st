@@ -8,10 +8,14 @@ Class {
 		'listener',
 		'forkAnnouncements',
 		'i2cActivated',
-		'i2cData'
+		'i2cData',
+		'diData',
+		'aiData',
+		'constantsDict'
 	],
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }
 
 { #category : 'as yet unclassified' }
@@ -40,6 +44,29 @@ TMXDriver >> activateI2C [
 	i2cActivated := true
 ]
 
+{ #category : 'accessing' }
+TMXDriver >> aiData [
+
+	^ aiData
+]
+
+{ #category : 'accessing' }
+TMXDriver >> aiData: anObject [
+
+	aiData := anObject
+]
+
+{ #category : 'io protocols' }
+TMXDriver >> analogValueFromPin: aPin [
+	"should check whether pin is reporting otherwise setting it to input als activates reporting"
+	| pinValue |
+	(self aiData includesKey: aPin) ifFalse: [
+		self beAnalogInputOnPin: aPin. 100 milliSeconds wait ].
+	pinValue := (self aiData at: aPin) pinValue.
+	^pinValue
+	
+]
+
 { #category : 'pin modes' }
 TMXDriver >> beAnalogInputOnPin: aPin [
 "this uses the analog pin number 0=4 !
@@ -50,9 +77,9 @@ we set the default differential to 2 to avoid excessive event numbers"
 { #category : 'pin modes' }
 TMXDriver >> beAnalogInputOnPin: aPin differential: anInt [
 "this uses the analog pin number 0=4 ! Mode = 3
-anInt can be more than 8 bits"
+anInt can be more than 8 bits. At the end add a 1 to enable reporting"
 	| command |
-	command := ByteArray with: 1 with: aPin with: 3 with: (anInt >> 8) with: (anInt bitAnd: 16rFF).
+	command := ByteArray with: 1 with: aPin with: 3 with: (anInt >> 8) with: (anInt bitAnd: 16rFF) with: 1.
 	self sendCommand: command
 ]
 
@@ -73,7 +100,7 @@ TMXDriver >> beDHTOnPin: aPin [
 
 { #category : 'pin modes' }
 TMXDriver >> beDigitalInputOnPin: aPin [
-	"mode = 0. Note that a differential of 1 is added"
+	"mode = 0. The 1 at the end enables reporting"
 		| command |
 		
 	command := ByteArray with: 1 with: aPin with: 0 with: 1.
@@ -82,7 +109,7 @@ TMXDriver >> beDigitalInputOnPin: aPin [
 
 { #category : 'pin modes' }
 TMXDriver >> beDigitalInputPullupOnPin: aPin [
-	"mode = 2. Note that a differential of 1 is added"
+	"mode = 2. The 1 at the end enables reporting"
 		| command |
 		
 	command := ByteArray with: 1 with: aPin with: 2 with: 1.
@@ -202,6 +229,18 @@ TMXDriver >> detachServoFromPin: aPin [
 	self sendCommand: command
 ]
 
+{ #category : 'accessing' }
+TMXDriver >> diData [
+
+	^ diData
+]
+
+{ #category : 'accessing' }
+TMXDriver >> diData: anObject [
+
+	diData := anObject
+]
+
 { #category : 'io protocols' }
 TMXDriver >> digitalValue: oneOrZero intoPin: aPin [
 	"digital_write = 2"
@@ -209,6 +248,17 @@ TMXDriver >> digitalValue: oneOrZero intoPin: aPin [
 	
 	command := ByteArray with: 2 with: aPin with: oneOrZero .
 	self sendCommand: command
+]
+
+{ #category : 'io protocols' }
+TMXDriver >> digitalValueFromPin: aPin [
+	"should check whether pin is reporting otherwise setting it to input als activates reporting"
+	| pinValue |
+	(self diData includesKey: aPin) ifFalse: [
+		self beAnalogInputOnPin: aPin. 100 milliSeconds wait ].
+	pinValue := (self diData at: aPin) pinValue.
+	^pinValue
+	
 ]
 
 { #category : 'reporting' }
@@ -329,7 +379,9 @@ TMXDriver >> initialize [
 	super initialize.
 	forkAnnouncements := false.
 	i2cActivated := false.
-	i2cData := Dictionary new
+	i2cData := Dictionary new.
+	diData := Dictionary new.
+	aiData := Dictionary new
 	
 	
 ]

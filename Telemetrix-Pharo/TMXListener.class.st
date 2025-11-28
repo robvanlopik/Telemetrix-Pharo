@@ -14,8 +14,9 @@ Class {
 		'listenerProcess',
 		'driver'
 	],
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }
 
 { #category : 'event handling' }
@@ -26,6 +27,7 @@ TMXListener >> announceAnalogInput: data [
 							pinValue: (data at: 2) *256 + (data at: 3);
 							timestamp: DateAndTime now;
 							yourself.
+	driver aiData at: (data at: 1) put: announcement. "for synchronous use"
 	self doAnnouncement: announcement
 ]
 
@@ -58,6 +60,7 @@ TMXListener >> announceDigitalInput: data [
 							pinValue: (data at: 2);
 							timestamp: DateAndTime now;
 							yourself.
+	driver diData at: (data first) put: announcement.
 	self doAnnouncement: announcement
 ]
 
@@ -225,7 +228,7 @@ TMXListener >> start [
 	"messageStream binary. zou hij l moeten zijn"
 	running := true.
 	listenerProcess := [ self listen]
-			forkAt: Processor lowIOPriority named: 'TMX listene'
+			forkAt: Processor lowIOPriority named: 'TMX listener'
 ]
 
 { #category : 'accessing' }
