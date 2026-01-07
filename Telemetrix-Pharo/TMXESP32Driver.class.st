@@ -1,6 +1,6 @@
 Class {
 	#name : 'TMXESP32Driver',
-	#superclass : 'TMXDriver',
+	#superclass : 'TMXIPDriver',
 	#category : 'Telemetrix-Pharo-Core',
 	#package : 'Telemetrix-Pharo',
 	#tag : 'Core'

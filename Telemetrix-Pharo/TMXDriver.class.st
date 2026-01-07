@@ -2,21 +2,25 @@ Class {
 	#name : 'TMXDriver',
 	#superclass : 'Object',
 	#instVars : [
-		'ip',
-		'port',
-		'commandStream',
 		'listener',
 		'forkAnnouncements',
 		'i2cActivated',
 		'i2cData',
 		'diData',
 		'aiData',
-		'constantsDict'
+		'constantsDict',
+		'tmxStream'
 	],
 	#category : 'Telemetrix-Pharo-Core',
 	#package : 'Telemetrix-Pharo',
 	#tag : 'Core'
 }
+
+{ #category : 'testing' }
+TMXDriver class >> isAbstract [
+
+	^ self == TMXDriver
+]
 
 { #category : 'as yet unclassified' }
 TMXDriver class >> onIP: anIPString [
@@ -184,41 +188,6 @@ TMXDriver >> beServoOutputOnPin: aPin minPulse: int1 maxPulse: int2 [
 	
 ]
 
-{ #category : 'accessing' }
-TMXDriver >> commandStream [
-	^commandStream
-]
-
-{ #category : 'accessing' }
-TMXDriver >> commandStream: anObject [
-
-	commandStream := anObject
-]
-
-{ #category : 'initialize-release' }
-TMXDriver >> connectOnIP: anAddress [
-	"connect with default port 31335"
-
-	self connectOnIP: anAddress port: 31335
-]
-
-{ #category : 'initialize-release' }
-TMXDriver >> connectOnIP: anIPString port: aPortNumber [
-	"if the socket cannot be opened, store nil"	
-			
-	self isConnected ifTrue: [ ^self ].
-	
-	commandStream := SocketStream openConnectionToHostNamed: anIPString port: aPortNumber.
-	commandStream isConnected ifFalse: [ commandStream := nil ].
-	commandStream binary.
-	
-	ip := anIPString.
-	port := aPortNumber.
-	self startListener 
-	
-		
-]
-
 { #category : 'pin modes' }
 TMXDriver >> detachServoFromPin: aPin [
 	"not sure what this does
@@ -255,7 +224,7 @@ TMXDriver >> digitalValueFromPin: aPin [
 	"should check whether pin is reporting otherwise setting it to input als activates reporting"
 	| pinValue |
 	(self diData includesKey: aPin) ifFalse: [
-		self beAnalogInputOnPin: aPin. 100 milliSeconds wait ].
+		self beDigitalInputOnPin: aPin. 100 milliSeconds wait ].
 	pinValue := (self diData at: aPin) pinValue.
 	^pinValue
 	
@@ -386,22 +355,10 @@ TMXDriver >> initialize [
 	
 ]
 
-{ #category : 'accessing' }
-TMXDriver >> ip [
-
-	^ ip
-]
-
-{ #category : 'accessing' }
-TMXDriver >> ip: anObject [
-
-	ip := anObject
-]
-
 { #category : 'testing' }
 TMXDriver >> isConnected [
 
-	^commandStream notNil
+	^tmxStream notNil
 ]
 
 { #category : 'accessing' }
@@ -555,12 +512,6 @@ TMXDriver >> openSonar [
 ]
 
 { #category : 'accessing' }
-TMXDriver >> port [
-
-	^ port
-]
-
-{ #category : 'accessing' }
 TMXDriver >> port: anObject [
 
 	port := anObject
@@ -583,7 +534,7 @@ TMXDriver >> sendCommand: aByteArray [
 	| buffer |
 	(aByteArray size > 255) ifTrue: [self halt].
 	buffer := (aByteArray size asByteArray) , aByteArray .
-	commandStream nextPutAll: buffer; flush
+	tmxStream nextPutAll: buffer; flush
 ]
 
 { #category : 'pwm-servo' }
@@ -673,8 +624,19 @@ TMXDriver >> spiWriteBlocking [
 { #category : 'initialization' }
 TMXDriver >> startListener [ 
 	listener ifNotNil: [^self].
-	listener := (TMXListener new withStream: commandStream for: self; yourself).
+	listener := (TMXListener new withStream: tmxStream for: self; yourself).
 	listener start
+]
+
+{ #category : 'accessing' }
+TMXDriver >> tmxStream [
+	^tmxStream
+]
+
+{ #category : 'accessing' }
+TMXDriver >> tmxStream: anObject [
+
+	tmxStream := anObject
 ]
 
 { #category : 'announcement handling' }
