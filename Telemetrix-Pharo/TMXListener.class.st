@@ -196,12 +196,13 @@ TMXListener >> listen [
 	
 	'I am listening' traceCr.
 	[  running ] whileTrue: [ 
-		[messageStream isDataAvailable] whileFalse: [ 1 seconds wait].		
+		[messageStream isDataAvailable] whileFalse: [ 10 milliSeconds wait].		
 					 "is is reasonalbe, as the timestamp has the same resolution (but the analog loop is 19 ms!"
 		messageSize := messageStream next.
 		    'got something ' trace. messageSize printString trace.
 		buffer := ByteArray new: messageSize.
-		messageStream next: messageSize into: buffer.
+		messageStream readInto: buffer startingAt: 1 count: messageSize .
+		"note this special SocketStream message will deliver all bytes asked for, or time out"
 		(' code: ', (buffer first printString)) traceCr.
 		self dispatch: buffer].
 ]
