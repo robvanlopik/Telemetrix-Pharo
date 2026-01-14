@@ -52,11 +52,24 @@ TMXSerialStream >> adjustInBuffer: bytesRead [
 	^old
 ]
 
+{ #category : 'accessing' }
+TMXSerialStream >> flush [
+ "as the outputstream is nog buffered, essentially a NOP"
+]
+
 { #category : 'private' }
 TMXSerialStream >> growInBuffer [
 	"Grows through doubling."
 
 	self resizeInBuffer: inBuffer size * 2
+]
+
+{ #category : 'configuration' }
+TMXSerialStream >> inBufferSize [
+	"Answers the current size of data in the inBuffer."
+
+	^inNextToWrite - lastRead - 1
+	
 ]
 
 { #category : 'initialization' }
@@ -66,7 +79,14 @@ TMXSerialStream >> initialize [
 	shouldSignal := true.
 	recentlyRead := 0.
 	bufferSize := 4096.
+	timeout := 30.
 	self resetBuffers
+]
+
+{ #category : 'testing' }
+TMXSerialStream >> isConnected [
+
+	^serialPort notNil
 ]
 
 { #category : 'accessing' }
@@ -79,9 +99,8 @@ TMXSerialStream >> isDataAvailable [
 	dataAvailable when there really is no data to get."
 
 	self isInBufferEmpty ifFalse: [^true].
-	serialPort dataAvailable
-		ifFalse: [false]
-		ifTrue: [self receiveDataIfAvailable; isDataAvailable]
+	self receiveDataIfAvailable.
+	^self isInBufferEmpty not
 ]
 
 { #category : 'testing' }
@@ -106,6 +125,62 @@ TMXSerialStream >> moveInBufferDown [
 { #category : 'accessing' }
 TMXSerialStream >> nextPutAll: aByteArray [
 	^self writeByteArray: aByteArray
+]
+
+{ #category : 'accessing' }
+TMXSerialStream >> readInto: aByteArray startingAt: startIndex count: anInteger [
+	"This is the only method in SocketStream that either delivers the correct number of bytetes orr times out. It must use SerialPort>>readBytearray:"
+	
+	| start amount |
+
+	self receiveData: anInteger.
+	"Inlined version of nextInBuffer: to avoid copying the contents"
+	amount := anInteger min: (inNextToWrite - lastRead - 1).
+	start := lastRead + 1.
+	lastRead := lastRead + amount.
+	aByteArray
+		replaceFrom: startIndex
+		to: startIndex + amount-1
+		with: inBuffer
+		startingAt: start.
+	^amount
+]
+
+{ #category : 'receiving' }
+TMXSerialStream >> receiveData [
+	"receive at least one byte or time out
+	repeat logic of serialPort>> readByteArray:timeout"
+	| maxCount count timeRemaining |
+	
+	maxCount := bufferSize - inNextToWrite - 1.
+	timeRemaining := timeout.
+	count := serialPort readInto: inBuffer startingAt: inNextToWrite count: maxCount.
+	[ count = 0 and: [ timeRemaining > 0 ] ]
+		whileTrue: [ 
+			20 milliSeconds wait.
+			timeRemaining := timeRemaining - 20.
+			count := serialPort readInto: inBuffer startingAt: inNextToWrite count: maxCount]. 
+	(count = 0) ifTrue: [ self error: 'timeout reading from port' ].
+	^self adjustInBuffer: count
+]
+
+{ #category : 'control' }
+TMXSerialStream >> receiveData: nBytes [
+	"Keep reading the socket until we have nBytes
+	in the inBuffer or we reach the end. This method
+	does not return data, but can be used to make sure
+	data has been read into the buffer from the Socket
+	before actually reading it from the FastSocketStream.
+	Mainly used internally. We could also adjust the buffer
+	to the expected amount of data and avoiding several
+	incremental grow operations.
+
+	NOTE: This method doesn't honor timeouts if shouldSignal
+	is false! And frankly, I am not sure how to handle that
+	case or if I care - I think we should always signal."
+
+	[self isConnected and: [nBytes > self inBufferSize]]
+		whileTrue: [self receiveData]
 ]
 
 { #category : 'private - socket' }
@@ -147,6 +222,16 @@ TMXSerialStream >> resizeInBuffer: newSize [
 TMXSerialStream >> serialPort: aSerialPort [
 
 	serialPort := aSerialPort
+]
+
+{ #category : 'accessing' }
+TMXSerialStream >> timeout [
+	^timeout 
+]
+
+{ #category : 'accessing' }
+TMXSerialStream >> timeout: milliseconds [
+	timeout := milliseconds
 ]
 
 { #category : 'writing' }
