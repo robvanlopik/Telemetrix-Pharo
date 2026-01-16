@@ -6,6 +6,14 @@ Class {
 	#tag : 'Core'
 }
 
+{ #category : 'as yet unclassified' }
+TMXIPDriver class >> onIP: anIPString [
+	^self new
+		connectOnIP: anIPString;
+		startListener;
+		yourself
+]
+
 { #category : 'initialize-release' }
 TMXIPDriver >> connectOnIP: anAddress [
 	"connect with default port 31335"

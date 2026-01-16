@@ -119,6 +119,15 @@ TMXListener >> announceServoUnavailable: data [
 
 { #category : 'event handling' }
 TMXListener >> announceSonarDistance: data [
+
+	| announcement |
+	announcement := TMXAnalogInputEvent new 
+							pinNr: (data at: 1);
+							pinValue: (data at: 2) *256 + (data at: 3);
+							timestamp: DateAndTime now;
+							yourself.
+	driver sonarData at: (data at: 1) put: announcement. "for synchronous use"
+	self doAnnouncement: announcement
 ]
 
 { #category : 'accessing' }
@@ -156,6 +165,7 @@ TMXListener >> initialize [
 	super initialize.
 	running := false.
 	announcer := Announcer new.
+	"dispatchDict for Nano2040"
 	dispatchDict := {
 		(0 -> #announceLoopbackReport:).
 		(2 -> #announceDigitalInput:). 

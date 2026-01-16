@@ -9,12 +9,23 @@ Class {
 		'diData',
 		'aiData',
 		'constantsDict',
-		'tmxStream'
+		'tmxStream',
+		'sonarData'
 	],
 	#category : 'Telemetrix-Pharo-Core',
 	#package : 'Telemetrix-Pharo',
 	#tag : 'Core'
 }
+
+{ #category : 'as yet unclassified' }
+TMXDriver class >> connectThrough: aStream [
+	"this is the fecailt method to start a TMXdriver
+	aStream has to be operational
+	specialisation is through the initialize method in the subclass"
+	
+		^self new tmxStream: aStream
+	
+]
 
 { #category : 'testing' }
 TMXDriver class >> isAbstract [
@@ -22,11 +33,10 @@ TMXDriver class >> isAbstract [
 	^ self == TMXDriver
 ]
 
-{ #category : 'as yet unclassified' }
-TMXDriver class >> onIP: anIPString [
-	^self new
-		connectOnIP: anIPString;
-		yourself
+{ #category : 'instance creation' }
+TMXDriver class >> on: aTMXStream [
+
+	^self basicNew initialize tmxStream: aTMXStream; startListener; yourself
 ]
 
 { #category : 'instance creation' }
@@ -44,7 +54,7 @@ TMXDriver >> activateI2C [
     I2C_READ = 11
     I2C_WRITE = 12"
 
-	self sendCommand: (ByteArray with: 10).
+	self sendCommand: (ByteArray with: (self idFrom: 'I2C_BEGIN')).
 	i2cActivated := true
 ]
 
@@ -83,7 +93,8 @@ TMXDriver >> beAnalogInputOnPin: aPin differential: anInt [
 "this uses the analog pin number 0=4 ! Mode = 3
 anInt can be more than 8 bits. At the end add a 1 to enable reporting"
 	| command |
-	command := ByteArray with: 1 with: aPin with: 3 with: (anInt >> 8) with: (anInt bitAnd: 16rFF) with: 1.
+	command := ByteArray with: (self idFrom: 'SET_PIN_MODE' ) with: aPin with: (self idFrom: 'AT_ANALOG')
+		with: (anInt >> 8) with: (anInt bitAnd: 16rFF) with: 1.
 	self sendCommand: command
 ]
 
@@ -95,10 +106,10 @@ TMXDriver >> beAnalogOutputOnPin: aPin [
 
 { #category : 'pin modes' }
 TMXDriver >> beDHTOnPin: aPin [
-	"DHT_NEW mode is 31"
+	"DHT_NEW mode is 31 in Nano2040 and 13 in Uno"
 	| command |
 	
-	command := ByteArray with: 31 with: aPin.
+	command := ByteArray with: (self idFrom: 'DHT_NEW') with: aPin.
 	self sendCommand: command
 ]
 
@@ -107,7 +118,7 @@ TMXDriver >> beDigitalInputOnPin: aPin [
 	"mode = 0. The 1 at the end enables reporting"
 		| command |
 		
-	command := ByteArray with: 1 with: aPin with: 0 with: 1.
+	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'AT_INPUT') with: 1.
 	self sendCommand: command
 ]
 
@@ -116,7 +127,8 @@ TMXDriver >> beDigitalInputPullupOnPin: aPin [
 	"mode = 2. The 1 at the end enables reporting"
 		| command |
 		
-	command := ByteArray with: 1 with: aPin with: 2 with: 1.
+	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') 
+		with: aPin with: (self idFrom: 'AT_INPUT_PULLUP') with: 1.
 	self sendCommand: command
 ]
 
@@ -125,7 +137,7 @@ TMXDriver >> beDigitalOutputOnPin: aPin [
 	"mode = 1"
 		| command |
 	
-	command := ByteArray with: 1 with: aPin with: 1.
+	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'AT_OUTPUT').
 	self sendCommand: command
 ]
 
@@ -142,7 +154,8 @@ TMXDriver >> beNeopixelOutputOnPin: aPin pixelCount: anInt colorFill: aColor [
 	g := (aColor green * 255) rounded bitAnd: 16rFF.
 	b := (aColor blue * 255) rounded bitAnd: 16rFF.
 	"self.number_of_pixels = num_pixels"	
-	command := ByteArray with: 21 with: aPin with: anInt with: r with: g with: b.
+	command := ByteArray with: (self idFrom: 'INITIALIZE_NEO_PIXELS')
+	   with: aPin with: anInt with: r with: g with: b.
 	self sendCommand: command
 	"self.neopixels_initiated = True"
 ]
@@ -156,7 +169,8 @@ TMXDriver >> beNeopixelOutputOnPin: aPin pixelCount: anInt rFill: r gFill: g bFi
 	maybe check all legal values"
 	| command |
 	"self.number_of_pixels = num_pixels"	
-	command := ByteArray with: 1 with: aPin with: anInt with: r with: g with: b.
+	command := ByteArray with: (self idFrom: 'INITIALIZE_NEO_PIXELS')
+		with: aPin with: anInt with: r with: g with: b.
 	self sendCommand: command
 	"self.neopixels_initiated = True"
 ]
@@ -166,7 +180,7 @@ TMXDriver >> bePWMOutputOnPin: aPin [
 	"TMX calls this analog output"
 	| command |
 	
-	command := ByteArray with: 1 with: aPin with: 1.
+	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'ANALOG_WRITE').
 	self sendCommand: command
 ]
 
@@ -182,9 +196,22 @@ TMXDriver >> beServoOutputOnPin: aPin minPulse: int1 maxPulse: int2 [
 	minPulse eand maxPulse as 16 bits number, bigendian (if I am right.."
 	| command |
 	
-	command := ByteArray with: 7 with: aPin with: ((int1 bitAnd: 16rFF00) >> 8) with: (int1 bitAnd: 16rFF)
-														with: ((int2 bitAnd: 16rFF00) >> 8) with: (int2 bitAnd: 16rFF).
+	command := ByteArray with: (self idFrom: 'SERVO_ATTACH') with: aPin 
+		with: ((int1 bitAnd: 16rFF00) >> 8) with: (int1 bitAnd: 16rFF)
+		with: ((int2 bitAnd: 16rFF00) >> 8) with: (int2 bitAnd: 16rFF).
 	self sendCommand: command
+	
+]
+
+{ #category : 'as yet unclassified' }
+TMXDriver >> beSonarWithTrigger: pin1 echo: pin2 [
+	"setup distance meqsurement. Shouls check for max nr of sonars"
+	
+		| command |
+		command := ByteArray with: (self idFrom: 'SONAR_NEW')
+				with: pin1 with: pin2 .
+				
+		self sendCommand: command
 	
 ]
 
@@ -194,7 +221,7 @@ TMXDriver >> detachServoFromPin: aPin [
 	SERVO_DETACH = 9"
 	| command |
 	
-	command := ByteArray with: 9 with: aPin .
+	command := ByteArray with: (self idFrom: 'SERVO_DETACH') with: aPin .
 	self sendCommand: command
 ]
 
@@ -215,7 +242,7 @@ TMXDriver >> digitalValue: oneOrZero intoPin: aPin [
 	"digital_write = 2"
 	| command |
 	
-	command := ByteArray with: 2 with: aPin with: oneOrZero .
+	command := ByteArray with: (self idFrom: 'DIGITAL_WRITE') with: aPin with: oneOrZero .
 	self sendCommand: command
 ]
 
@@ -233,9 +260,11 @@ TMXDriver >> digitalValueFromPin: aPin [
 { #category : 'reporting' }
 TMXDriver >> disableAllReporting [
 	"MODIFY_REPORTING = 4
-	REPORTING_DISABLE_ALL = 0"
+	REPORTING_DISABLE_ALL = 0
+	dont know role of last 0"
 	| command |
-	command := ByteArray with: 4 with: 0 with: 0.
+	command := ByteArray with: (self idFrom: 'MODIFY_REPORTING') 
+		with: (self idFrom: 'REPORTING_DISABLE_ALL') with: 0.
 	self sendCommand: command
 ]
 
@@ -244,7 +273,8 @@ TMXDriver >> disableAnalogReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4"
 	"REPORTING_ANALOG_DISABLE = 3"
 	| command |
-	command := ByteArray with: 4 with: 3 with: aPin.
+	command := ByteArray with: (self idFrom: 'MODIFY_REPORTING') 
+		with: (self idFrom: 'REPORTING_ANALOG_DISABLE') with: aPin.
 	self sendCommand: command
 ]
 
@@ -253,7 +283,8 @@ TMXDriver >> disableDigitalReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4
 	REPORTING_DDIGITAL_DISABLE = 4"
 	| command |
-	command := ByteArray with: 4 with: 4 with: aPin.
+	command := ByteArray with: (self idFrom: 'MODIFY_REPORTING') 
+		with: (self idFrom: 'REPORTING_DDIGITAL_DISABLE' ) with: aPin.
 	self sendCommand: command
 ]
 
@@ -262,7 +293,8 @@ TMXDriver >> enableAnalogReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4
 	REPORTING_ANALOG_ENABLE = 1"
 	| command |
-	command := ByteArray with: 4 with: 1 with: aPin.
+	command := ByteArray with: (self idFrom: 'MODIFY_REPORTING')
+		 with: (self idFrom: 'REPORTING_ANALOG_ENABLE') with: aPin.
 	self sendCommand: command
 
 ]
@@ -272,7 +304,8 @@ TMXDriver >> enableDigitalReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4
 	REPORTING_DIGITAL_ENBLE = 2"
 	| command |
-	command := ByteArray with: 4 with: 2 with: aPin.
+	command := ByteArray with: (self idFrom: 'MODIFY_REPORTING') 
+		with: (self idFrom: 'REPORTING_DIGITAL_ENBLE') with: aPin.
 	self sendCommand: command
 ]
 
@@ -313,11 +346,12 @@ TMXDriver >> i2cData: anObject [
 { #category : 'i2c' }
 TMXDriver >> i2cReadFromAdress: anAddress register: aRegister count: byteCount [
 	"read and stop transmission, ie stop_transmission = true
-	I2C_READ = 11
+	I2C_READ = 11; last ! makes stop-transmission true
 	"
 	
 	i2cActivated ifTrue: [ 
-		self sendCommand: (ByteArray with: 11 with: anAddress with: aRegister with: byteCount with: 1)]
+		self sendCommand: (ByteArray with: (self idFrom: 'I2C_READ') 
+			with: anAddress with: aRegister with: byteCount with: 1)]
 ]
 
 { #category : 'as yet unclassified' }
@@ -331,7 +365,8 @@ TMXDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister
 	"
 	
 	i2cActivated ifTrue: [ 
-		self sendCommand: (ByteArray with: 11 with: anAddress with: aRegister with: byteCount with: 0)]
+		self sendCommand: (ByteArray with: [ self idFrom: 'I2C_READ' ] 
+		with: anAddress with: aRegister with: byteCount with: 0)]
 ]
 
 { #category : 'i2c' }
@@ -339,7 +374,14 @@ TMXDriver >> i2cWrite: aDataArray toAddress: anAddress [
 	"I2C_WRITE = 12; data is a ByteAray"
 	
 	i2cActivated ifTrue:	
-	[self sendCommand: ((ByteArray with: 12 with: aDataArray size with: anAddress) , aDataArray)]
+	[self sendCommand: ((ByteArray with: (self idFrom: 'I2C_WRITE') 
+		with: aDataArray size with: anAddress) , aDataArray)]
+]
+
+{ #category : 'computing' }
+TMXDriver >> idFrom: aString [
+
+	^constantsDict at: aString
 ]
 
 { #category : 'initialization' }
@@ -350,7 +392,9 @@ TMXDriver >> initialize [
 	i2cActivated := false.
 	i2cData := Dictionary new.
 	diData := Dictionary new.
-	aiData := Dictionary new
+	aiData := Dictionary new.
+	sonarData := Dictionary new.
+	constantsDict := Dictionary new.
 	
 	
 ]
@@ -511,12 +555,6 @@ TMXDriver >> openSPI [
 TMXDriver >> openSonar [
 ]
 
-{ #category : 'accessing' }
-TMXDriver >> port: anObject [
-
-	port := anObject
-]
-
 { #category : 'io protocols' }
 TMXDriver >> pwmValue: aNumber intoPin: aPin [
 	"note this is called analog_write in the Python version, as is often done. This is misleading becausoe
@@ -531,8 +569,8 @@ TMXDriver >> pwmValue: aNumber intoPin: aPin [
 
 { #category : 'testing' }
 TMXDriver >> sendCommand: aByteArray [
-	| buffer |
-	(aByteArray size > 255) ifTrue: [self halt].
+	| buffer | 
+	(aByteArray size > 255) ifTrue: [self error: 'packet too long'].
 	buffer := (aByteArray size asByteArray) , aByteArray .
 	tmxStream nextPutAll: buffer; flush
 ]
@@ -603,6 +641,12 @@ TMXDriver >> setupLoopbackSubscription [
 
 { #category : 'as yet unclassified' }
 TMXDriver >> shutdown [
+]
+
+{ #category : 'accessing' }
+TMXDriver >> sonarData [
+
+	^sonarData
 ]
 
 { #category : 'as yet unclassified' }

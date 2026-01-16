@@ -8,7 +8,7 @@ Class {
 
 { #category : 'as yet unclassified' }
 TMXESP32Driver >> initConstantsDict [
-	"device specifc data and constaints"
+	"device specifc data and constants"
 	constantsDict 
 		at: 'DIPins' put: #(4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33);
 		at: 'DOPins' put: #(2 4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33);

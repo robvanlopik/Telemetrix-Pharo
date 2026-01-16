@@ -3,6 +3,8 @@ I present a stream view of a SerialPort, (almost) exactly like SocketStram on a 
 I aim to have the same APÏ as SocketStream, but for the time being this is limited to the methods used in the Telemetrix-Pharo project
 Only supports ByteArrays.
 As a starter, output is NOT buffered
+
+Note: #adjustInBuffer uses absolute buffer sizes, making it impracical to change the buffer size in #initialize
 "
 Class {
 	#name : 'TMXSerialStream',
@@ -50,6 +52,20 @@ TMXSerialStream >> adjustInBuffer: bytesRead [
 				ifTrue: [^old - self moveInBufferDown]
 				ifFalse: [self growInBuffer]].
 	^old
+]
+
+{ #category : 'accessing' }
+TMXSerialStream >> atEnd [
+	"There is nothing more to read when
+	there is no more data in our inBuffer, the socket
+	is disconnected and there is none available on the socket.
+	Note that we need to check isConnected before isDataAvailable,
+	otherwise data may sneak in in the meantime. But we check the
+	buffer first, because it is faster."
+
+	self isInBufferEmpty ifFalse: [^false].
+	^self isConnected not
+		and: [self isDataAvailable not]
 ]
 
 { #category : 'accessing' }
@@ -120,6 +136,39 @@ TMXSerialStream >> moveInBufferDown [
 	lastRead := 0.
 	inNextToWrite := sz + 1.
 	^distanceMoved
+]
+
+{ #category : 'accessing' }
+TMXSerialStream >> next [
+	"Return next byte, if inBuffer is empty
+	we recieve some more data and try again."
+
+	self atEnd ifTrue: [^nil].
+	self isInBufferEmpty ifTrue:
+		[self receiveData.
+		self atEnd ifTrue: [^nil]].
+	lastRead := lastRead + 1.
+	^inBuffer at: lastRead
+]
+
+{ #category : 'accessing' }
+TMXSerialStream >> next: n into: aCollection [
+	"Read n objects into the given collection.
+	Return aCollection or a partial copy if less than
+	n elements have been read."
+	^self next: n into: aCollection startingAt: 1
+]
+
+{ #category : 'accessing' }
+TMXSerialStream >> next: requestedCount into: collection startingAt: startIndex [
+	"Read requestedCount objects into the given collection.
+	Return collection or a partial copy if less elements have been read."
+
+	| readCount |
+	readCount := self readInto: collection startingAt: startIndex count: requestedCount.
+	^ readCount = requestedCount
+		ifTrue: [ collection ]
+		ifFalse: [ collection copyFrom: 1 to: startIndex + readCount - 1 ]
 ]
 
 { #category : 'accessing' }
@@ -216,6 +265,12 @@ TMXSerialStream >> resizeInBuffer: newSize [
 
 	inBuffer := (ByteArray new: newSize)
 					replaceFrom: 1 to: inNextToWrite - 1 with: inBuffer startingAt: 1
+]
+
+{ #category : 'accessing' }
+TMXSerialStream >> serialPort [
+
+	^serialPort
 ]
 
 { #category : 'accessing' }

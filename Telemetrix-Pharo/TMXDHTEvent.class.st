@@ -3,7 +3,7 @@ Class {
 	#superclass : 'TMXAnnouncement',
 	#instVars : [
 		'type',
-		'piNr',
+		'pinNr',
 		'humidity',
 		'temperature'
 	],
@@ -25,15 +25,15 @@ TMXDHTEvent >> humidity: anObject [
 ]
 
 { #category : 'accessing' }
-TMXDHTEvent >> piNr [
+TMXDHTEvent >> pinNr [
 
-	^ piNr
+	^ pinNr
 ]
 
 { #category : 'accessing' }
-TMXDHTEvent >> piNr: anObject [
+TMXDHTEvent >> pinNr: anObject [
 
-	piNr := anObject
+	pinNr := anObject
 ]
 
 { #category : 'accessing' }
