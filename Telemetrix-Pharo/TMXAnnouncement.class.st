@@ -1,6 +1,6 @@
 "
 I am the superclass of the announcements sent by the TMXListener.
-Each message has a Unix timestamp as the last 4 bytes of the message.
+Each message has a timestamp attributed at the time of reception
 "
 Class {
 	#name : 'TMXAnnouncement',

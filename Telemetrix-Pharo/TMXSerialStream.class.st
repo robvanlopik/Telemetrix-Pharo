@@ -69,6 +69,11 @@ TMXSerialStream >> atEnd [
 ]
 
 { #category : 'accessing' }
+TMXSerialStream >> binary [
+	"do nothing no choice"
+]
+
+{ #category : 'accessing' }
 TMXSerialStream >> flush [
  "as the outputstream is nog buffered, essentially a NOP"
 ]

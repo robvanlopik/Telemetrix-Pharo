@@ -1,3 +1,6 @@
+"
+I am the superclass for the IP-based Telemetrix drivers. I facilitate their initialisation by connecting to the quested IP address and port (default 31335)
+"
 Class {
 	#name : 'TMXIPDriver',
 	#superclass : 'TMXDriver',
@@ -5,6 +8,12 @@ Class {
 	#package : 'Telemetrix-Pharo',
 	#tag : 'Core'
 }
+
+{ #category : 'testing' }
+TMXIPDriver class >> isAbstract [
+
+	^ self == TMXIPDriver
+]
 
 { #category : 'as yet unclassified' }
 TMXIPDriver class >> onIP: anIPString [

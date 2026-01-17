@@ -1,3 +1,6 @@
+"
+I am the abstract superclass of the TMXDrivers that use the serial port
+"
 Class {
 	#name : 'TMXSerialDriver',
 	#superclass : 'TMXDriver',
@@ -5,6 +8,12 @@ Class {
 	#package : 'Telemetrix-Pharo',
 	#tag : 'Core'
 }
+
+{ #category : 'testing' }
+TMXSerialDriver class >> isAbstract [
+
+	^ self == TMXSerialDriver
+]
 
 { #category : 'connection' }
 TMXSerialDriver >> connectOnPort: aPortName baudRate: anInteger [

@@ -1,3 +1,8 @@
+"
+I represent the result of an analog input event.
+my message code is ANALOG_?REPORT
+I contain the pin number pinNr and the value read: pinValue
+"
 Class {
 	#name : 'TMXAnalogInputEvent',
 	#superclass : 'TMXAnnouncement',

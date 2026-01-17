@@ -1,3 +1,21 @@
+"
+I am the abstract superclass of all Telemetrix drivers.
+Telemetrix supports a number of data transport methods. 
+Abstract drivers for TCP/IR transport and Serial link are my subclasses.
+
+The transport mechanism must support the Stream protocol. In the IP case we use SocketStream. For the serial port we have TMXSerialStream that supports just enough methods to function for this purpose.
+
+I can be opened on a stream; the subclasses specialze to opening on IP or Serial port.
+
+I contain almost all code to implement all Telemetrix functions. Because of the asynchronous nature of the Telemetrix protocol, I am supported by TMXListener.
+
+All results coming from the device are wrapped in announcements, subclasses of TMXAnnouncement.
+At the same time the latest result are also storen in instance variable. Reading these gives the most recent result.
+
+The specialisation for the different Telemetrix servers is for the most part accomplished through the instance variable constantsDict and dispatchDict that are filled by the initialisation method of my final subclasses.
+
+BTW the easiest way to find the different Telemetrix servers is through the Arduino IDE: look for Telemetrix exexmples. 
+"
 Class {
 	#name : 'TMXDriver',
 	#superclass : 'Object',
@@ -10,7 +28,8 @@ Class {
 		'aiData',
 		'constantsDict',
 		'tmxStream',
-		'sonarData'
+		'sonarData',
+		'status'
 	],
 	#category : 'Telemetrix-Pharo-Core',
 	#package : 'Telemetrix-Pharo',
@@ -257,7 +276,7 @@ TMXDriver >> digitalValueFromPin: aPin [
 	
 ]
 
-{ #category : 'reporting' }
+{ #category : 'change reporting' }
 TMXDriver >> disableAllReporting [
 	"MODIFY_REPORTING = 4
 	REPORTING_DISABLE_ALL = 0
@@ -268,7 +287,7 @@ TMXDriver >> disableAllReporting [
 	self sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'change reporting' }
 TMXDriver >> disableAnalogReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4"
 	"REPORTING_ANALOG_DISABLE = 3"
@@ -278,7 +297,7 @@ TMXDriver >> disableAnalogReportingOnPin: aPin [
 	self sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'change reporting' }
 TMXDriver >> disableDigitalReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4
 	REPORTING_DDIGITAL_DISABLE = 4"
@@ -288,7 +307,7 @@ TMXDriver >> disableDigitalReportingOnPin: aPin [
 	self sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'change reporting' }
 TMXDriver >> enableAnalogReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4
 	REPORTING_ANALOG_ENABLE = 1"
@@ -299,7 +318,7 @@ TMXDriver >> enableAnalogReportingOnPin: aPin [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'change reporting' }
 TMXDriver >> enableDigitalReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4
 	REPORTING_DIGITAL_ENBLE = 2"
@@ -354,7 +373,7 @@ TMXDriver >> i2cReadFromAdress: anAddress register: aRegister count: byteCount [
 			with: anAddress with: aRegister with: byteCount with: 1)]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'i2c' }
 TMXDriver >> i2cReadRestartTransmission [
 ]
 
@@ -395,6 +414,7 @@ TMXDriver >> initialize [
 	aiData := Dictionary new.
 	sonarData := Dictionary new.
 	constantsDict := Dictionary new.
+	status := TMXStatus new
 	
 	
 ]
@@ -521,11 +541,11 @@ TMXDriver >> neopixelnr: aNumber r: rValue g: gValue b: bValue autoShow: boolean
 	self sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'i2c' }
 TMXDriver >> openI2C [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'i2c' }
 TMXDriver >> openI2C: i2cAddress [
 	"return a I2C Connection as expected by Pots.
 	Fill i2cData with a valid timestamp"
@@ -544,15 +564,7 @@ TMXDriver >> openMichrophone [
 ]
 
 { #category : 'as yet unclassified' }
-TMXDriver >> openNeopixel [
-]
-
-{ #category : 'as yet unclassified' }
 TMXDriver >> openSPI [
-]
-
-{ #category : 'as yet unclassified' }
-TMXDriver >> openSonar [
 ]
 
 { #category : 'io protocols' }
@@ -597,10 +609,6 @@ TMXDriver >> servoValue: angle intoPin: aPin [
 	self sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
-TMXDriver >> setAnalogScanInterval [
-]
-
 { #category : 'analog io' }
 TMXDriver >> setAnalogScanInterval: aByteValue [
 	"default is 19 ms. Note that with a small differential this leads to an overload of messages
@@ -610,7 +618,7 @@ TMXDriver >> setAnalogScanInterval: aByteValue [
 	self sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'utilities' }
 TMXDriver >> setupAnalogInputSubscription [
 	self when: TMXAnalogInputEvent do: [ :ann |
 			('analog pin: ', (ann pinNr printString), ' became ', (ann pinValue printString), 
@@ -618,7 +626,7 @@ TMXDriver >> setupAnalogInputSubscription [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'utilities' }
 TMXDriver >> setupDigitalInputSubscription [
 	self when: TMXDigitalInputEvent do: [ :ann |
 			('digital pin: ', (ann pinNr printString), ' became ', (ann pinValue printString), 
@@ -626,7 +634,7 @@ TMXDriver >> setupDigitalInputSubscription [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'utilities' }
 TMXDriver >> setupI2CReadSubscription [
 	self when: TMXI2CEvent do: [ :ann |
 			('address: ', (ann address printString), ' register: ' , (ann register printString), 
@@ -634,7 +642,7 @@ TMXDriver >> setupI2CReadSubscription [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'utilities' }
 TMXDriver >> setupLoopbackSubscription [
 	self when: TMXLoopbackEvent do: [ :ann | ('loopback: ', (ann data) traceCr) ]  for: self
 ]
@@ -649,19 +657,19 @@ TMXDriver >> sonarData [
 	^sonarData
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SPI' }
 TMXDriver >> spiCsControl [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SPI' }
 TMXDriver >> spiReadBlocking [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SPI' }
 TMXDriver >> spiSetFormat [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SPI' }
 TMXDriver >> spiWriteBlocking [
 ]
 

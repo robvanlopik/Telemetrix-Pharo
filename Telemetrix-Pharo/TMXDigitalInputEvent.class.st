@@ -1,3 +1,8 @@
+"
+I represent the result of an digital input event.
+my message code is DIGITAL_?REPORT
+I contain the pin number pinNr and the value read: pinValue
+"
 Class {
 	#name : 'TMXDigitalInputEvent',
 	#superclass : 'TMXAnnouncement',
