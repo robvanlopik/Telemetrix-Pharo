@@ -22,14 +22,14 @@ Class {
 	#instVars : [
 		'listener',
 		'forkAnnouncements',
-		'i2cActivated',
 		'i2cData',
 		'diData',
 		'aiData',
 		'constantsDict',
 		'tmxStream',
 		'sonarData',
-		'status'
+		'status',
+		'dispatchDict'
 	],
 	#category : 'Telemetrix-Pharo-Core',
 	#package : 'Telemetrix-Pharo',
@@ -222,7 +222,7 @@ TMXDriver >> beServoOutputOnPin: aPin minPulse: int1 maxPulse: int2 [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'sonar' }
 TMXDriver >> beSonarWithTrigger: pin1 echo: pin2 [
 	"setup distance meqsurement. Shouls check for max nr of sonars"
 	
@@ -307,6 +307,12 @@ TMXDriver >> disableDigitalReportingOnPin: aPin [
 	self sendCommand: command
 ]
 
+{ #category : 'accessing' }
+TMXDriver >> dispatchDict [
+
+	^ dispatchDict
+]
+
 { #category : 'change reporting' }
 TMXDriver >> enableAnalogReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4
@@ -338,16 +344,16 @@ TMXDriver >> forkAnnouncements: aBoolean [
 	forkAnnouncements := aBoolean
 ]
 
-{ #category : 'accessing' }
+{ #category : 'testing' }
 TMXDriver >> i2cActivated [
 
-	^ i2cActivated
+	^ status i2cActivated
 ]
 
-{ #category : 'accessing' }
-TMXDriver >> i2cActivated: anObject [
+{ #category : 'testing' }
+TMXDriver >> i2cActivated: aBoolean [
 
-	i2cActivated := anObject
+	status i2cActivated: aBoolean 
 ]
 
 { #category : 'accessing' }
@@ -368,13 +374,9 @@ TMXDriver >> i2cReadFromAdress: anAddress register: aRegister count: byteCount [
 	I2C_READ = 11; last ! makes stop-transmission true
 	"
 	
-	i2cActivated ifTrue: [ 
+	self i2cActivated ifTrue: [ 
 		self sendCommand: (ByteArray with: (self idFrom: 'I2C_READ') 
 			with: anAddress with: aRegister with: byteCount with: 1)]
-]
-
-{ #category : 'i2c' }
-TMXDriver >> i2cReadRestartTransmission [
 ]
 
 { #category : 'i2c' }
@@ -383,7 +385,7 @@ TMXDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister
 	I2C_READ = 11
 	"
 	
-	i2cActivated ifTrue: [ 
+	self i2cActivated ifTrue: [ 
 		self sendCommand: (ByteArray with: [ self idFrom: 'I2C_READ' ] 
 		with: anAddress with: aRegister with: byteCount with: 0)]
 ]
@@ -392,7 +394,7 @@ TMXDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister
 TMXDriver >> i2cWrite: aDataArray toAddress: anAddress [
 	"I2C_WRITE = 12; data is a ByteAray"
 	
-	i2cActivated ifTrue:	
+	self i2cActivated ifTrue:	
 	[self sendCommand: ((ByteArray with: (self idFrom: 'I2C_WRITE') 
 		with: aDataArray size with: anAddress) , aDataArray)]
 ]
@@ -400,6 +402,7 @@ TMXDriver >> i2cWrite: aDataArray toAddress: anAddress [
 { #category : 'computing' }
 TMXDriver >> idFrom: aString [
 
+	(constantsDict includesKey: aString) ifFalse: [ self error: ('constant ', aString, ' not known')].
 	^constantsDict at: aString
 ]
 
@@ -408,7 +411,6 @@ TMXDriver >> initialize [
 
 	super initialize.
 	forkAnnouncements := false.
-	i2cActivated := false.
 	i2cData := Dictionary new.
 	diData := Dictionary new.
 	aiData := Dictionary new.
@@ -436,7 +438,7 @@ TMXDriver >> listener: anObject [
 	listener := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'testing' }
 TMXDriver >> loopback: aByte [
 	"send aByte. It should be returned in an TMXLoopbackEvent"
 	
@@ -449,18 +451,14 @@ TMXDriver >> loopback: aByte [
 TMXDriver >> neopixelClearLater [
 	"clear the display but dont immediately show it"
 	"CLEAR_ALL_NEO_PIXELS = 24"
-	self sendCommand: (ByteArray with: 24 with: 0)
+	self sendCommand: (ByteArray with: (self idFrom: 'CLEAR_ALL_NEO_PIXELS') with: 0)
 ]
 
 { #category : 'neopixel' }
 TMXDriver >> neopixelClearNow [
 	"clear the display and immediately show it"
 	"CLEAR_ALL_NEO_PIXELS = 24"
-	self sendCommand: (ByteArray with: 24 with: 1)
-]
-
-{ #category : 'neopixel' }
-TMXDriver >> neopixelFill [
+	self sendCommand: (ByteArray with: (self idFrom: 'CLEAR_ALL_NEO_PIXELS') with: 1)
 ]
 
 { #category : 'neopixel' }
@@ -471,7 +469,7 @@ TMXDriver >> neopixelFillLaterColor: aColor [
 	r := (aColor red * 255) rounded bitAnd: 16rFF.
 	g := (aColor green * 255) rounded bitAnd: 16rFF.
 	b := (aColor blue * 255) rounded bitAnd: 16rFF.
-	self sendCommand: (ByteArray with: 25 with: r with: g with: b with: 0)
+	self sendCommand: (ByteArray with: (self idFrom: 'FILL_ALL_NEO_PIXELS') with: r with: g with: b with: 0)
 ]
 
 { #category : 'neopixel' }
@@ -482,18 +480,11 @@ TMXDriver >> neopixelFillNowColor: aColor [
 	r := (aColor red * 255) rounded bitAnd: 16rFF.
 	g := (aColor green * 255) rounded bitAnd: 16rFF.
 	b := (aColor blue * 255) rounded bitAnd: 16rFF.
-	self sendCommand: (ByteArray with: 25 with: r with: g with: b with: 1)
+	self sendCommand: (ByteArray with: (self idFrom: 'FILL_ALL_NEO_PIXELS') with: r with: g with: b with: 1)
 ]
 
 { #category : 'neopixel' }
-TMXDriver >> neopixelShow [
-	"Write the NeoPixel buffer stored on the server to the NeoPixel device."
-	"SHOW_NEO_PIXELS = 22"
-	self sendCommand: (ByteArray with: 22)
-]
-
-{ #category : 'neopixel' }
-TMXDriver >> neopixelnr: aNumber color: aColor [
+TMXDriver >> neopixelNr: aNumber color: aColor [
 	"set pixen number aNumber (0 - maxpixels) to rgb and default disable autoshow"
 	"SET_NEO_PIXEL = 23"
 	| auto command rValue gValue bValue|
@@ -501,12 +492,13 @@ TMXDriver >> neopixelnr: aNumber color: aColor [
 	rValue := (aColor red * 255) rounded bitAnd: 16rFF. 
 	gValue := (aColor green * 255) rounded bitAnd: 16rFF.
 	bValue := (aColor blue * 255) rounded bitAnd: 16rFF.
-	command := ByteArray with: 23 with: aNumber with: rValue with: gValue with: bValue with: auto.
+	command := ByteArray with: (self idFrom: 'SET_NEO_PIXEL') 
+			with: aNumber with: rValue with: gValue with: bValue with: auto.
 	self sendCommand: command
 ]
 
 { #category : 'neopixel' }
-TMXDriver >> neopixelnr: aNumber color: aColor autoShow: boolean [
+TMXDriver >> neopixelNr: aNumber color: aColor autoShow: boolean [
 	"set pixen number aNumber (0 - maxpixels) to rgb and enable or disable autoshow"
 	"SET_NEO_PIXEL = 23"
 	| auto command rValue gValue bValue|
@@ -515,23 +507,23 @@ TMXDriver >> neopixelnr: aNumber color: aColor autoShow: boolean [
 	rValue := (aColor red * 255) rounded bitAnd: 16rFF. 
 	gValue := (aColor green * 255) rounded bitAnd: 16rFF.
 	bValue := (aColor blue * 255) rounded bitAnd: 16rFF.
-	command := ByteArray with: 23 with: aNumber with: rValue with: gValue with: bValue with: auto.
+	command := ByteArray with: (self idFrom: 'SET_NEO_PIXEL') with: aNumber with: rValue with: gValue with: bValue with: auto.
 	self sendCommand: command
 ]
 
 { #category : 'neopixel' }
-TMXDriver >> neopixelnr: aNumber r: rValue g: gValue b: bValue [
+TMXDriver >> neopixelNr: aNumber r: rValue g: gValue b: bValue [
 	"set pixen number aNumber (0 - maxpixels) to rgb and defalt disable autoshow"
 	"SET_NEO_PIXEL = 23"
 	| auto command|
 	auto := 0.
 	
-	command := ByteArray with: 23 with: aNumber with: rValue with: gValue with: bValue with: auto.
+	command := ByteArray with: (self idFrom: 'SET_NEO_PIXEL') with: aNumber with: rValue with: gValue with: bValue with: auto.
 	self sendCommand: command
 ]
 
 { #category : 'neopixel' }
-TMXDriver >> neopixelnr: aNumber r: rValue g: gValue b: bValue autoShow: boolean [
+TMXDriver >> neopixelNr: aNumber r: rValue g: gValue b: bValue autoShow: boolean [
 	"set pixen number aNumber (0 - maxpixels) to rgb and enable or disable autoshow"
 	"SET_NEO_PIXEL = 23"
 	| auto command|
@@ -541,15 +533,18 @@ TMXDriver >> neopixelnr: aNumber r: rValue g: gValue b: bValue autoShow: boolean
 	self sendCommand: command
 ]
 
-{ #category : 'i2c' }
-TMXDriver >> openI2C [
+{ #category : 'neopixel' }
+TMXDriver >> neopixelShow [
+	"Write the NeoPixel buffer stored on the server to the NeoPixel device."
+	"SHOW_NEO_PIXELS = 22"
+	self sendCommand: (ByteArray with: (self idFrom: 'SHOW_NEO_PIXELS'))
 ]
 
 { #category : 'i2c' }
 TMXDriver >> openI2C: i2cAddress [
 	"return a I2C Connection as expected by Pots.
 	Fill i2cData with a valid timestamp"
-	i2cActivated ifFalse: [ self activateI2C ].
+	status i2cActivated ifFalse: [ self activateI2C ].
 	i2cData at: i2cAddress put: ( TMXI2CEvent new address: i2cAddress; count: 1;
 		register: 0; bytes: #[0]; timestamp: DateAndTime now; yourself ).
 	^TMXI2CConnection new address: i2cAddress; driver: self; yourself
@@ -563,19 +558,26 @@ TMXDriver >> openIMU [
 TMXDriver >> openMichrophone [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SPI' }
 TMXDriver >> openSPI [
 ]
 
 { #category : 'io protocols' }
 TMXDriver >> pwmValue: aNumber intoPin: aPin [
 	"note this is called analog_write in the Python version, as is often done. This is misleading becausoe
-	 some MCU's have a real ADC for analog output. Value must be less than 256"
+	 some MCU's have a real DAC for analog output. Value must be less than 256"
 	"ANALOG_WRITE = 3"
 	
 	| command |
 	
-	command := ByteArray with: 3 with: aPin with: aNumber .
+	command := ByteArray with: (self idFrom: 'ANALOG_WRITE') with: aPin with: aNumber .
+	self sendCommand: command
+]
+
+{ #category : 'initialization' }
+TMXDriver >> reset [
+	| command |
+	command := ByteArray with: (self idFrom: 'RESET').
 	self sendCommand: command
 ]
 
@@ -588,15 +590,11 @@ TMXDriver >> sendCommand: aByteArray [
 ]
 
 { #category : 'pwm-servo' }
-TMXDriver >> servoDetach [
-]
-
-{ #category : 'pwm-servo' }
 TMXDriver >> servoDetachFromPin: aPin [
 	"evidently you can't just assign another mode to the pin
 	SERVO_DETACH = 9"
 	
-	self sendCommand: (ByteArray with: 9 with: aPin)
+	self sendCommand: (ByteArray with: (self idFrom: 'SERVO_DETACH') with: aPin)
 ]
 
 { #category : 'pwm-servo' }
@@ -605,7 +603,7 @@ TMXDriver >> servoValue: angle intoPin: aPin [
 
 	| command |
 	
-	command := ByteArray with: 8 with: aPin with: angle .
+	command := ByteArray with: (self idFrom: 'SERVO_WRITE') with: aPin with: angle .
 	self sendCommand: command
 ]
 
@@ -614,7 +612,7 @@ TMXDriver >> setAnalogScanInterval: aByteValue [
 	"default is 19 ms. Note that with a small differential this leads to an overload of messages
 	SET_ANALOG_SCANNING_INTERVAL = 16"
 	| command |
-	command := ByteArray with: 16 with: (aByteValue bitAnd: 16rFF).
+	command := ByteArray with: (self idFrom: 'SET_ANALOG_SCANNING_INTERVAL') with: (aByteValue bitAnd: 16rFF).
 	self sendCommand: command
 ]
 
@@ -649,6 +647,8 @@ TMXDriver >> setupLoopbackSubscription [
 
 { #category : 'as yet unclassified' }
 TMXDriver >> shutdown [
+	listener stop.
+	self reset
 ]
 
 { #category : 'accessing' }
@@ -678,6 +678,23 @@ TMXDriver >> startListener [
 	listener ifNotNil: [^self].
 	listener := (TMXListener new withStream: tmxStream for: self; yourself).
 	listener start
+]
+
+{ #category : 'accessing' }
+TMXDriver >> status [
+
+	^ status
+]
+
+{ #category : 'accessing' }
+TMXDriver >> status: anObject [
+
+	status := anObject
+]
+
+{ #category : 'event processing' }
+TMXDriver >> stopListener [
+	listener stop
 ]
 
 { #category : 'accessing' }

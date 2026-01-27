@@ -6,6 +6,16 @@ Class {
 	#tag : 'Core'
 }
 
+{ #category : 'pin modes' }
+TMXUnoDriver >> beDigitalInputPullupOnPin: aPin [
+	"(mode = 2). The 1 at the end enables reporting"
+		| command |
+		
+	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') 
+		with: aPin with: (self idFrom: 'AT_INPUT_PULLUP') with: 1.
+	self sendCommand: command
+]
+
 { #category : 'as yet unclassified' }
 TMXUnoDriver >> initConstantsDict [ 
 constantsDict
@@ -112,7 +122,32 @@ at: 'SONAR_FEATURE' put: 16r20.
 ]
 
 { #category : 'initialization' }
+TMXUnoDriver >> initDispatchDict [
+
+	dispatchDict := {
+		(self idFrom: 'LOOP_COMMAND' -> #announceLoopbackReport:).
+		(self idFrom: 'DEBUG_PRINT' -> #x).
+		(self idFrom: 'DIGITAL_REPORT'-> #announceDigitalInput:). 
+		(self idFrom: 'ANALOG_REPORT' -> #announceAnalogInput:).
+		(self idFrom: 'FIRMWARE_REPORT' -> #announceFirmwareReport:).
+		(self idFrom: 'I_AM_HERE_REPORT' -> #announceIAMHere:).
+		(self idFrom: 'SERVO_UNAVAILABE' -> #announceServoUnavailable:).
+		(self idFrom: 'I2C_TOO_FEW_BYTES_RCVD' -> #announceI2CTooFewBytesRcvd: ).
+		(self idFrom: 'I2C_TOO_MANY_BYTES_RCVD' -> #announceI2CTooManyBytesRcvd:).
+		(self idFrom: 'I2C_READ_REPORT' -> #announceI2CReadReport:).
+		(11 -> #announceSonarDistance:).
+		(12 -> #announceIMUReport).
+		(13 -> #announceMicrophoneReport:).
+		(14 -> #announceDHTReport:).
+		(15 -> #announceSPIReport:)	.
+		(99 -> #announceDebugPrint:).
+		} asDictionary.
+
+]
+
+{ #category : 'initialization' }
 TMXUnoDriver >> initialize [ 
 	super initialize.
-	self initConstantsDict 
+	self initConstantsDict.
+	self initDispatchDict
 ]
