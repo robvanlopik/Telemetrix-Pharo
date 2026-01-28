@@ -1,3 +1,6 @@
+"
+I am the driver for the classic Arduino Uno
+"
 Class {
 	#name : 'TMXUnoDriver',
 	#superclass : 'TMXUnoFamiliyDriver',
