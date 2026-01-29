@@ -40,7 +40,7 @@ TMXESP32Driver >> bePWMOutputOnPin: pinNr channel: chanNr frequency: freq resolu
 bytes := ByteArray new: 8.
 bytes doubleAt: 1 put: freq asFloat bigEndian: false.
 command := (ByteArray with: (self idFrom: 'SET_PIN_MODE') with: pinNr 
-		with: (self idFrom: 'AT_PWM_OUT') with: chanNr) , bytes, ByteArray with: res.
+		with: (self idFrom: 'AT_PWM_OUT') with: chanNr) , bytes, (ByteArray with: res).
 	self sendCommand: command
 ]
 

@@ -58,7 +58,19 @@ TMXI2CConnection >> readByteAt: register [
 	| requestTime |
 	requestTime := DateAndTime now.
 	driver i2cReadFromAdress: i2cAddress register: register count: 1. 
-	40 timesRepeat: [  :ann | | event |
+	40 timesRepeat: [ | event |
+		event := driver i2cData at: i2cAddress.
+		(event timestamp > requestTime) & (event register = register ) ifTrue: [ ^(event bytes) at: 1  ].
+		50 milliSeconds wait. ]
+]
+
+{ #category : 'i2c' }
+TMXI2CConnection >> readByteXAt: register [
+
+	| requestTime |
+	requestTime := DateAndTime now.
+	driver i2cReadRestartTransmissionFromAdress: i2cAddress register: register count: 1. 
+	40 timesRepeat: [ | event |
 		event := driver i2cData at: i2cAddress.
 		(event timestamp > requestTime) & (event register = register ) ifTrue: [ ^(event bytes) at: 1  ].
 		50 milliSeconds wait. ]

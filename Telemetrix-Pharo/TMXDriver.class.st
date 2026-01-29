@@ -25,11 +25,13 @@ Class {
 		'i2cData',
 		'diData',
 		'aiData',
+		'dhtData',
 		'constantsDict',
 		'tmxStream',
 		'sonarData',
 		'status',
-		'dispatchDict'
+		'dispatchDict',
+		'pins'
 	],
 	#category : 'Telemetrix-Pharo-Core',
 	#package : 'Telemetrix-Pharo',
@@ -74,7 +76,7 @@ TMXDriver >> activateI2C [
     I2C_WRITE = 12"
 
 	self sendCommand: (ByteArray with: (self idFrom: 'I2C_BEGIN')).
-	i2cActivated := true
+	status i2cActivated: true
 ]
 
 { #category : 'accessing' }
@@ -245,6 +247,18 @@ TMXDriver >> detachServoFromPin: aPin [
 ]
 
 { #category : 'accessing' }
+TMXDriver >> dhtData [
+
+	^ dhtData
+]
+
+{ #category : 'accessing' }
+TMXDriver >> dhtData: anObject [
+
+	dhtData := anObject
+]
+
+{ #category : 'accessing' }
 TMXDriver >> diData [
 
 	^ diData
@@ -386,7 +400,7 @@ TMXDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister
 	"
 	
 	self i2cActivated ifTrue: [ 
-		self sendCommand: (ByteArray with: [ self idFrom: 'I2C_READ' ] 
+		self sendCommand: (ByteArray with: ( self idFrom: 'I2C_READ' ) 
 		with: anAddress with: aRegister with: byteCount with: 0)]
 ]
 
@@ -414,9 +428,11 @@ TMXDriver >> initialize [
 	i2cData := Dictionary new.
 	diData := Dictionary new.
 	aiData := Dictionary new.
+	dhtData := Dictionary new.
 	sonarData := Dictionary new.
 	constantsDict := Dictionary new.
-	status := TMXStatus new
+	status := TMXStatus new.
+	pins := TMXPins new
 	
 	
 ]
@@ -625,6 +641,15 @@ TMXDriver >> setupAnalogInputSubscription [
 ]
 
 { #category : 'utilities' }
+TMXDriver >> setupDHTSubscription [
+	self when: TMXDHTEvent do: [ :ann |
+			('DHT on pin: ', (ann pinNr printString), ' became ', (ann humidity printString), '% and ',
+										(ann temperature printString), 
+										'C at ', (ann timestamp printString )) traceCr] for: self. 
+	
+]
+
+{ #category : 'utilities' }
 TMXDriver >> setupDigitalInputSubscription [
 	self when: TMXDigitalInputEvent do: [ :ann |
 			('digital pin: ', (ann pinNr printString), ' became ', (ann pinValue printString), 
@@ -655,6 +680,12 @@ TMXDriver >> shutdown [
 TMXDriver >> sonarData [
 
 	^sonarData
+]
+
+{ #category : 'accessing' }
+TMXDriver >> sonarData: anObject [
+
+	sonarData := anObject
 ]
 
 { #category : 'SPI' }

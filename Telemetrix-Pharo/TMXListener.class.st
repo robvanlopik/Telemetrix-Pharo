@@ -36,15 +36,15 @@ TMXListener >> announceDHTReport: data [
     DHT_ERROR = 1"
 	| announcement type|
 	type := data at: 1.
-	(type = 0) ifTrue: [   "data are correct" 
+	(type = 1) ifTrue: [   ('DHTerror ', (data at: 3) printString ) traceCr. ^self ].
 		announcement := TMXDHTEvent new 
 							pinNr: (data at: 2);
-							pinValue: (data at: 3) *256 + (data at: 2);
+							humidity: (Float fromIEEE32Bit: (data unsignedLongAt: 3 bigEndian: false));
+							temperature: (Float fromIEEE32Bit: (data unsignedLongAt: 7 bigEndian: false));
 							timestamp: DateAndTime now;
 							yourself.
-							
-	self doAnnouncement: announcement ]
-
+	driver dhtData at: (data at: 2) put: announcer. 						
+	self doAnnouncement: announcement 
 ]
 
 { #category : 'event handling' }
