@@ -40,7 +40,7 @@ TMXESP32Driver >> bePWMOutputOnPin: pinNr channel: chanNr frequency: freq resolu
 bytes := ByteArray new: 8.
 bytes doubleAt: 1 put: freq asFloat bigEndian: false.
 command := (ByteArray with: (self idFrom: 'SET_PIN_MODE') with: pinNr 
-		with: (self idFrom: 'AT_PWM_OUT') with: chanNr) , bytes, (ByteArray with: res).
+		with: (self idFrom: 'AT_PWM_OUT') with: chanNr with: res) , bytes.
 	self sendCommand: command
 ]
 
@@ -204,6 +204,20 @@ TMXESP32Driver >> initDispatchDict [
 		"one wire"
 		(99 -> #announceDebugPrint:).
 		} asDictionary.
+]
+
+{ #category : 'initialization' }
+TMXESP32Driver >> initPins [
+
+	pins pwm: #(2 4 5 12 13 14 16 17 18 19 21
+           22 23 25 26 27 32 33) asSet.
+	pins servo: #(4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33) asSet.
+	pins ai: #(32 33 34 35 36 39) asSet.
+	pins di: #(4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33) asSet.
+	pins do: (pins di).	
+	pins ao: #(25 26) asSet.
+	pins dht: (pins di).
+	pins sonar: (pins di).
 ]
 
 { #category : 'initialization' }

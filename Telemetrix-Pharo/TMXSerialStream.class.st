@@ -73,6 +73,14 @@ TMXSerialStream >> binary [
 	"do nothing no choice"
 ]
 
+{ #category : 'initialization' }
+TMXSerialStream >> close [
+
+	serialPort close
+	
+	
+]
+
 { #category : 'accessing' }
 TMXSerialStream >> flush [
  "as the outputstream is nog buffered, essentially a NOP"

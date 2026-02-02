@@ -91,6 +91,24 @@ TMXPins >> do: anObject [
 	do := anObject
 ]
 
+{ #category : 'initialization' }
+TMXPins >> initialize [ 
+	super initialize.
+	"set all vars to an empty Set
+	Each drivber should provide its own initialisation
+	These value will also be used by #providePinInfo in Pots"
+	di := Set new.
+	do := Set new.
+	ai := Set new.
+	ao := Set new.
+	dht := Set new.
+	sonar := Set new.
+	servo := Set new.
+	pwm := Set new.
+	cs := Set new.
+
+]
+
 { #category : 'accessing' }
 TMXPins >> pwm [
 

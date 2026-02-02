@@ -83,6 +83,23 @@ TMXListener >> announceI2CReadReport: data [
 ]
 
 { #category : 'event handling' }
+TMXListener >> announceI2CReadReportChannel: data [
+	"report in case of more i2c channels
+	the eventbuffer is I2C_READ_REPORT, count, address, register, bytes"
+	| announcement |
+	announcement := TMXI2CEvent new
+							channel: (data at: 1);
+							address: (data at: 3);
+							register: (data at: 4);
+							count: (data at: 2);
+							bytes: (data allButFirst: 4);
+							timestamp: DateAndTime now;
+							yourself.
+	(driver i2cData) at: (data at: 2) put: announcement. "for synchronous use by i2cconncection)"
+	self doAnnouncement: announcement 
+]
+
+{ #category : 'event handling' }
 TMXListener >> announceI2CTooFewBytesRcvd: data [
 ]
 

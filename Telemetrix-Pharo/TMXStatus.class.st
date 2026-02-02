@@ -8,6 +8,7 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'i2cActivated',
+		'i2cActivated1',
 		'spiEnabled',
 		'csPins',
 		'onewireEnabled',
@@ -49,6 +50,18 @@ TMXStatus >> dhtCount: anObject [
 TMXStatus >> i2cActivated [
 
 	^ i2cActivated
+]
+
+{ #category : 'accessing' }
+TMXStatus >> i2cActivated1 [
+
+	^ i2cActivated1
+]
+
+{ #category : 'accessing' }
+TMXStatus >> i2cActivated1: anObject [
+
+	i2cActivated1 := anObject
 ]
 
 { #category : 'accessing' }
