@@ -327,6 +327,11 @@ TMXDriver >> dispatchDict [
 	^ dispatchDict
 ]
 
+{ #category : 'sonar' }
+TMXDriver >> distanceFronPin: pinNumber [
+	^(self sonarData at: pinNumber) distance
+]
+
 { #category : 'change reporting' }
 TMXDriver >> enableAnalogReportingOnPin: aPin [
 	"MODIFY_REPORTING = 4
@@ -356,6 +361,12 @@ TMXDriver >> forkAnnouncements [
 { #category : 'accessing' }
 TMXDriver >> forkAnnouncements: aBoolean [
 	forkAnnouncements := aBoolean
+]
+
+{ #category : 'dht' }
+TMXDriver >> humidityFromDHTPin: pinNumber [
+
+	^(dhtData at: pinNumber) humidity
 ]
 
 { #category : 'testing' }
@@ -566,11 +577,11 @@ TMXDriver >> openI2C: i2cAddress [
 	^TMXI2CConnection new address: i2cAddress; driver: self; yourself
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'to be done' }
 TMXDriver >> openIMU [
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'to be done' }
 TMXDriver >> openMichrophone [
 ]
 
@@ -597,7 +608,7 @@ TMXDriver >> reset [
 	self sendCommand: command
 ]
 
-{ #category : 'testing' }
+{ #category : 'private' }
 TMXDriver >> sendCommand: aByteArray [
 	| buffer | 
 	(aByteArray size > 255) ifTrue: [self error: 'packet too long'].
@@ -670,7 +681,16 @@ TMXDriver >> setupLoopbackSubscription [
 	self when: TMXLoopbackEvent do: [ :ann | ('loopback: ', (ann data) traceCr) ]  for: self
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'utilities' }
+TMXDriver >> setupSonarSubscription [
+	"setup subscription to sonar measurement, write to Tramscript"
+	self when: TMXSonarEvent do: [ :ann |
+			('pin  ', (ann pinNr printString), ' measured distance  ', (ann distance printString), 
+										' at ', (ann timestamp printString )) traceCr] for: self. 
+	
+]
+
+{ #category : 'finalization' }
 TMXDriver >> shutdown [
 	listener stop.
 	self reset
@@ -723,9 +743,15 @@ TMXDriver >> status: anObject [
 	status := anObject
 ]
 
-{ #category : 'event processing' }
+{ #category : 'finalization' }
 TMXDriver >> stopListener [
 	listener stop
+]
+
+{ #category : 'dht' }
+TMXDriver >> temperatureFromDHTPin: pinNumber [
+
+	^(dhtData at: pinNumber) temperature
 ]
 
 { #category : 'accessing' }
@@ -737,11 +763,6 @@ TMXDriver >> tmxStream [
 TMXDriver >> tmxStream: anObject [
 
 	tmxStream := anObject
-]
-
-{ #category : 'announcement handling' }
-TMXDriver >> when: anEvent do: aBlock [ 
-	listener announcer when: anEvent do: aBlock
 ]
 
 { #category : 'announcement handling' }

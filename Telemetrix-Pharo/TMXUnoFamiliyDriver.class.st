@@ -18,12 +18,12 @@ TMXUnoFamiliyDriver >> activateI2C [
 	self activateI2CChannel: 0
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'i2c' }
 TMXUnoFamiliyDriver >> activateI2CChannel: zeroone [
 	"special for the UNO family: i2c channel (port) 0 or 1"
 	
 	self sendCommand: (ByteArray with: (self idFrom: 'I2C_BEGIN') with: zeroone).
-	
+	(zeroone = 0) ifTrue: [ self i2cActivated: true ] ifFalse: [ self i2cActivated1: true].
 ]
 
 { #category : 'as yet unclassified' }
@@ -66,6 +66,40 @@ TMXUnoFamiliyDriver >> i2cActivated1 [
 	^self status i2cActivated1
 ]
 
+{ #category : 'as yet unclassified' }
+TMXUnoFamiliyDriver >> i2cReadFromAdress: anAddress register: aRegister count: byteCount [
+	self i2cReadFromAdress: anAddress register: aRegister count: byteCount channel: 0
+]
+
+{ #category : 'as yet unclassified' }
+TMXUnoFamiliyDriver >> i2cReadFromAdress: anAddress register: aRegister count: byteCount channel: number [
+	"read and stop transmission, ie stop_transmission = true
+	I2C_READ = 11; last ! makes stop-transmission true
+	for Uno etc add channel,
+	"
+	
+	"(self i2cActivated) ifTrue: [ "
+		self sendCommand: (ByteArray with: (self idFrom: 'I2C_READ') 
+			with: anAddress) , (ByteArray with: aRegister with: byteCount with: 1 with: number with: 1)
+]
+
+{ #category : 'as yet unclassified' }
+TMXUnoFamiliyDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister count: byteCount [
+	self i2cReadRestartTransmissionFromAdress: anAddress register: aRegister count: byteCount channel: 0
+]
+
+{ #category : 'as yet unclassified' }
+TMXUnoFamiliyDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister count: byteCount channel: number [
+	"read and restart transmission, ie stop_transmission = false
+	I2C_READ = 11; last ! makes stop-transmission true
+	for Uno etc add channel and add last 1 for wrtie register,
+	"
+	
+	"(self i2cActivated) ifTrue: [ "
+		self sendCommand: (ByteArray with: (self idFrom: 'I2C_READ') 
+			with: anAddress) , (ByteArray with: aRegister with: byteCount with: 0 with: number with: 1)
+]
+
 { #category : 'i2c' }
 TMXUnoFamiliyDriver >> i2cWrite: aDataArray toAddress: address [
 
@@ -75,9 +109,9 @@ TMXUnoFamiliyDriver >> i2cWrite: aDataArray toAddress: address [
 { #category : 'i2c' }
 TMXUnoFamiliyDriver >> i2cWrite: aDataArray toAddress: address channel: number [ 
 
-		self i2cActivated ifTrue:	
-	[self sendCommand: ((ByteArray with: (self idFrom: 'I2C_WRITE') 
-		with: aDataArray size with: address with: number ) , aDataArray)]
+	"	self i2cActivated ifTrue:	"
+	self sendCommand: ((ByteArray with: (self idFrom: 'I2C_WRITE') 
+		with: aDataArray size with: address with: number ) , aDataArray)
 ]
 
 { #category : 'initialization' }
@@ -97,7 +131,7 @@ TMXUnoFamiliyDriver >> initDispatchDict [
 		((self idFrom: 'SONAR_DISTANCE') -> #announceSonarDistance:).
 		"(12 -> #announceIMUReport)."
 		"(13 -> #announceMicrophoneReport:)."
-		((self idFrom: 'DHT_REPORT') -> #announceDHTReport:).
+		((self idFrom: 'DHT_REPORT') -> #announceDHTUnoReport:).
 		((self idFrom: 'SPI_REPORT') -> #announceSPIReport:)	.
 		(99 -> #announceDebugPrint:).
 		"ONE_WIRE_REPORT"

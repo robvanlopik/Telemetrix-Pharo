@@ -5,7 +5,8 @@ Class {
 		'address',
 		'register',
 		'count',
-		'bytes'
+		'bytes',
+		'channel'
 	],
 	#category : 'Telemetrix-Pharo-Core',
 	#package : 'Telemetrix-Pharo',
@@ -34,6 +35,18 @@ TMXI2CEvent >> bytes [
 TMXI2CEvent >> bytes: anObject [
 
 	bytes := anObject
+]
+
+{ #category : 'accessing' }
+TMXI2CEvent >> channel [
+
+	^ channel
+]
+
+{ #category : 'accessing' }
+TMXI2CEvent >> channel: anObject [
+
+	channel := anObject
 ]
 
 { #category : 'accessing' }

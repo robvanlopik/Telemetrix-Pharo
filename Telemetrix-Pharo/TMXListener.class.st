@@ -34,16 +34,41 @@ TMXListener >> announceAnalogInput: data [
 TMXListener >> announceDHTReport: data [
 "DHT_DATA = 0
     DHT_ERROR = 1"
-	| announcement type|
+	| announcement type tSign hSign|
 	type := data at: 1.
 	(type = 1) ifTrue: [   ('DHTerror ', (data at: 3) printString ) traceCr. ^self ].
+	tSign := 1.
+	((data at: 4) ~= 0) ifTrue: [ tSign :=  -1.0 ].
+	hSign := 1.0.
+	((data at: 3) ~= 0) ifTrue: [ tSign := -1.0 ].
 		announcement := TMXDHTEvent new 
 							pinNr: (data at: 2);
-							humidity: (Float fromIEEE32Bit: (data unsignedLongAt: 3 bigEndian: false));
-							temperature: (Float fromIEEE32Bit: (data unsignedLongAt: 7 bigEndian: false));
+							humidity: ((data at: 5) + ((data at: 6)/100)) * hSign;
+							temperature: ((data at: 7) + ((data at: 8)/100)) * tSign;
 							timestamp: DateAndTime now;
 							yourself.
-	driver dhtData at: (data at: 2) put: announcer. 						
+	driver dhtData at: (data at: 2) put: announcement. 						
+	self doAnnouncement: announcement 
+]
+
+{ #category : 'event handling' }
+TMXListener >> announceDHTUnoReport: data [
+"DHT_DATA = 0
+    DHT_ERROR = 1"
+	| announcement type tSign hSign|
+	type := data at: 1.
+	(type = 1) ifTrue: [   ('DHTerror ', (data at: 3) printString ) traceCr. ^self ].
+	tSign := 1.
+	((data at: 5) ~= 0) ifTrue: [ tSign :=  -1.0 ].
+	hSign := 1.0.
+	((data at: 4) ~= 0) ifTrue: [ tSign := -1.0 ].
+		announcement := TMXDHTEvent new 
+							pinNr: (data at: 2);
+							humidity: ((data at: 6) + ((data at: 7)/100)) * hSign;
+							temperature: ((data at: 8) + ((data at: 9)/100)) * tSign;
+							timestamp: DateAndTime now;
+							yourself.
+	driver dhtData at: (data at: 2) put: announcement. 						
 	self doAnnouncement: announcement 
 ]
 
@@ -95,7 +120,7 @@ TMXListener >> announceI2CReadReportChannel: data [
 							bytes: (data allButFirst: 4);
 							timestamp: DateAndTime now;
 							yourself.
-	(driver i2cData) at: (data at: 2) put: announcement. "for synchronous use by i2cconncection)"
+	(driver i2cData) at: (data at: 3) put: announcement. "for synchronous use by i2cconncection)"
 	self doAnnouncement: announcement 
 ]
 
@@ -137,9 +162,9 @@ TMXListener >> announceServoUnavailable: data [
 TMXListener >> announceSonarDistance: data [
 
 	| announcement |
-	announcement := TMXAnalogInputEvent new 
+	announcement := TMXSonarEvent new 
 							pinNr: (data at: 1);
-							pinValue: (data at: 2) *256 + (data at: 3);
+							distance: (data at: 2) *256 + (data at: 3);
 							timestamp: DateAndTime now;
 							yourself.
 	driver sonarData at: (data at: 1) put: announcement. "for synchronous use"
@@ -211,7 +236,7 @@ TMXListener >> listen [
 		buffer := ByteArray new: messageSize.
 		messageStream readInto: buffer startingAt: 1 count: messageSize .
 		"note this special SocketStream message will deliver all bytes asked for, or time out"
-		(' code: ', (buffer first printString)) traceCr.
+		(' code: ', (buffer printString)) traceCr.
 		self dispatch: buffer].
 ]
 

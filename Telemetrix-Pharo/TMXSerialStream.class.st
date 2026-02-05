@@ -1,5 +1,5 @@
 "
-I present a stream view of a SerialPort, (almost) exactly like SocketStram on a Socket.
+I present a stream view of a SerialPort, modeled after SocketStram on a Socket.
 I aim to have the same APÏ as SocketStream, but for the time being this is limited to the methods used in the Telemetrix-Pharo project
 Only supports ByteArrays.
 As a starter, output is NOT buffered
