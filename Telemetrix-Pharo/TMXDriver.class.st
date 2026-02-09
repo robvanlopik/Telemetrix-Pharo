@@ -71,7 +71,7 @@ TMXDriver class >> onIP: anIPString port: aPortNumber [
 TMXDriver >> activateI2C [
 	"activate I2C on the default pins, SDA=A4 and SCL=A5
 	Note there is no way to free the pins!
-	I2C_BEGIN = 10
+	I2C_BEGIN = 10(
     I2C_READ = 11
     I2C_WRITE = 12"
 
@@ -443,8 +443,8 @@ TMXDriver >> initialize [
 	sonarData := Dictionary new.
 	constantsDict := Dictionary new.
 	status := TMXStatus new.
-	pins := TMXPins new
-	
+	pins := TMXPins new.
+
 	
 ]
 

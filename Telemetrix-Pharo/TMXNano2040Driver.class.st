@@ -150,3 +150,21 @@ TMXNano2040Driver >> initConstantsDict [
 		at: 'DAC_1' put: 25;
 		at: 'DAC_2' put: 26.
 ]
+
+{ #category : 'initialization' }
+TMXNano2040Driver >> initDispatchDict [ 
+]
+
+{ #category : 'initialization' }
+TMXNano2040Driver >> initPins [ 
+
+]
+
+{ #category : 'initialization' }
+TMXNano2040Driver >> initialize [ 
+	
+	super initialize.
+	self initConstantsDict .
+	self initDispatchDict .
+	self initPins
+]

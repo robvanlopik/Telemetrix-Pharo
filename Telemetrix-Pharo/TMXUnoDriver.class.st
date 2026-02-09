@@ -116,6 +116,31 @@ at: 'SONAR_FEATURE' put: 16r20.
 ]
 
 { #category : 'initialization' }
+TMXUnoDriver >> initDispatchDict [ 
+	"dispatch table for Arduio Uno"
+	dispatchDict := {
+		((self idFrom: 'LOOP_COMMAND') -> #announceLoopbackReport:).
+		((self idFrom: 'DEBUG_PRINT') -> #x).
+		((self idFrom: 'DIGITAL_REPORT') -> #announceDigitalInput:). 
+		((self idFrom: 'ANALOG_REPORT') -> #announceAnalogInput:).
+		((self idFrom: 'FIRMWARE_REPORT') -> #announceFirmwareReport:).
+		""(self idFrom: 'I_AM_HERE_REPORT' -> #announceIAMHere:).""
+		((self idFrom: 'SERVO_UNAVAILABLE') -> #announceServoUnavailable:).
+		((self idFrom: 'I2C_TOO_FEW_BYTES_RCVD') -> #announceI2CTooFewBytesRcvd: ).
+		((self idFrom: 'I2C_TOO_MANY_BYTES_RCVD') -> #announceI2CTooManyBytesRcvd:).
+		((self idFrom: 'I2C_READ_REPORT') -> #announceI2CReadReport:).
+		((self idFrom: 'SONAR_DISTANCE') -> #announceSonarDistance:).
+		""(12 -> #announceIMUReport).""
+		""(13 -> #announceMicrophoneReport:).""
+		((self idFrom: 'DHT_REPORT') -> #announceDHTReport:).
+		((self idFrom: 'SPI_REPORT') -> #announceSPIReport:)	.
+		"((self idFrom: 'TOUCH_Report') -> #announceTouchReport). "
+		"one wire"
+		(99 -> #announceDebugPrint:).
+		} asDictionary.
+]
+
+{ #category : 'initialization' }
 TMXUnoDriver >> initPins [
 	"specific for Arduino Uno. Include AI as di en do"
 	

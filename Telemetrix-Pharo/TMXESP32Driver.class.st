@@ -224,7 +224,9 @@ TMXESP32Driver >> initPins [
 TMXESP32Driver >> initialize [
 
 	super initialize.
-	
+	self initConstantsDict .
+	self initDispatchDict .
+	self initPins
 ]
 
 { #category : 'io protocols' }
