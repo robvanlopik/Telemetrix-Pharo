@@ -124,14 +124,14 @@ TMXUnoDriver >> initDispatchDict [
 		((self idFrom: 'DIGITAL_REPORT') -> #announceDigitalInput:). 
 		((self idFrom: 'ANALOG_REPORT') -> #announceAnalogInput:).
 		((self idFrom: 'FIRMWARE_REPORT') -> #announceFirmwareReport:).
-		""(self idFrom: 'I_AM_HERE_REPORT' -> #announceIAMHere:).""
+		"(self idFrom: 'I_AM_HERE_REPORT' -> #announceIAMHere:)."
 		((self idFrom: 'SERVO_UNAVAILABLE') -> #announceServoUnavailable:).
 		((self idFrom: 'I2C_TOO_FEW_BYTES_RCVD') -> #announceI2CTooFewBytesRcvd: ).
 		((self idFrom: 'I2C_TOO_MANY_BYTES_RCVD') -> #announceI2CTooManyBytesRcvd:).
 		((self idFrom: 'I2C_READ_REPORT') -> #announceI2CReadReport:).
 		((self idFrom: 'SONAR_DISTANCE') -> #announceSonarDistance:).
-		""(12 -> #announceIMUReport).""
-		""(13 -> #announceMicrophoneReport:).""
+		"(12 -> #announceIMUReport)."
+		"(13 -> #announceMicrophoneReport:)."
 		((self idFrom: 'DHT_REPORT') -> #announceDHTReport:).
 		((self idFrom: 'SPI_REPORT') -> #announceSPIReport:)	.
 		"((self idFrom: 'TOUCH_Report') -> #announceTouchReport). "
@@ -144,7 +144,7 @@ TMXUnoDriver >> initDispatchDict [
 TMXUnoDriver >> initPins [
 	"specific for Arduino Uno. Include AI as di en do"
 	
-	pins di: #(2 3 4 54 6 7 8 9 19 11 12 13 14 15 16 17 18 19) asSet.
+	pins di: #(2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19) asSet.
 	pins do: (pins di).
 	pins pwm: #(3 5 6 9 10 11) asSet. "native support, others miight work"
 	pins servo: (pins pwm).

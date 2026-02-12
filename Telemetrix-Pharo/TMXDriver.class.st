@@ -317,7 +317,7 @@ TMXDriver >> disableDigitalReportingOnPin: aPin [
 	REPORTING_DDIGITAL_DISABLE = 4"
 	| command |
 	command := ByteArray with: (self idFrom: 'MODIFY_REPORTING') 
-		with: (self idFrom: 'REPORTING_DDIGITAL_DISABLE' ) with: aPin.
+		with: (self idFrom: 'REPORTING_DIGITAL_DISABLE' ) with: aPin.
 	self sendCommand: command
 ]
 
@@ -587,6 +587,12 @@ TMXDriver >> openMichrophone [
 
 { #category : 'SPI' }
 TMXDriver >> openSPI [
+]
+
+{ #category : 'accessing' }
+TMXDriver >> pins [
+
+	^ pins
 ]
 
 { #category : 'io protocols' }
