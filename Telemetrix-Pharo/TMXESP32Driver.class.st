@@ -56,12 +56,7 @@ TMXESP32Driver >> disableDacOnPin: aPin [
 { #category : 'initialization' }
 TMXESP32Driver >> initConstantsDict [
 	"device specifc data and constants"
-	constantsDict 
-		at: 'DIPins' put: #(4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33);
-		at: 'DOPins' put: #(2 4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33);
-		at: 'TouchPins' put: #(4 12 13 14 15 27 32 33);
-		at: 'AIPins' put: #(32 33 34 35 36 39);
-		at: 'ServoPins' put: #(4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33). 
+
 	constantsDict		
 		at: 'LOOP_COMMAND' put: 0;
 		at: 'SET_PIN_MODE' put: 1;

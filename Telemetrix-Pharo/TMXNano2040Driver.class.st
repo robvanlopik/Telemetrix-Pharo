@@ -13,12 +13,7 @@ Class {
 TMXNano2040Driver >> initConstantsDict [
 
 		"device specifc data and constants Nano2040"
-	constantsDict 
-		at: 'DIPins' put: #(4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33);
-		at: 'DOPins' put: #(2 4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33);
-		at: 'TouchPins' put: #(4 12 13 14 15 27 32 33);
-		at: 'AIPins' put: #(32 33 34 35 36 39);
-		at: 'ServoPins' put: #(4 5 12 13 14 16 17 18 19 21 22 23 25 26 27 32 33). 
+
 	constantsDict		
 		at: 'LOOP_COMMAND' put: 0;
 		at: 'SET_PIN_MODE' put: 1;
@@ -26,7 +21,7 @@ TMXNano2040Driver >> initConstantsDict [
 		at: 'ANALOG_WRITE' put: 3;
 		at: 'MODIFY_REPORTING' put: 4;
 		at: 'GET_FIRMWARE_VERSION' put: 5;
-	"	at: 'ARE_U_THERE' put: 6; "
+		at: 'ARE_U_THERE' put: 6; 
 		at: 'SERVO_ATTACH' put: 7;
 		at: 'SERVO_WRITE' put: 8;
 		at: 'SERVO_DETACH' put: 9;
@@ -104,7 +99,7 @@ TMXNano2040Driver >> initConstantsDict [
 		at: 'DHT_REPORT' put: 14;
 		"at: 'TOUCH_Report' put: 12;"
 		at: 'SPI_REPORT' put: 15;
-		at: 'ONE_WIRE_REPORT' put: 14;
+	"	at: 'ONE_WIRE_REPORT' put: 14;
 		at: 'STEPPER_DISTANCE_TO_GO' put: 15;
 		at: 'STEPPER_TARGET_POSITION' put: 16;
 		at: 'STEPPER_CURRENT_POSITION' put: 17;
@@ -112,7 +107,7 @@ TMXNano2040Driver >> initConstantsDict [
 		at: 'STEPPER_RUN_COMPLETE_REPORT' put: 19;
 		at: 'FEATURES' put: 20;
 		at: 'DEBUG_PRINT' put: 99;
-		at: 'TELEMETRIX_ESP#@_VERSION' put: '12.0.0';
+		at: 'TELEMETRIX_ESP#@_VERSION' put: '12.0.0';"
 	"reporting control"
 		at: 'REPORTING_DISABLE_ALL' put: 0;
 		at: 'REPORTING_ANALOG_ENABLE' put: 1;
@@ -137,6 +132,9 @@ TMXNano2040Driver >> initConstantsDict [
 		at: 'MAX_DHTS' put: 2;
 		at: 'DHT_DATA' put: 0;
 		at: 'DHT_ERROR' put: 1;
+		
+		at: 'MICROPHONE_MONO' put: 1;
+		at: 'MICROPHONE_STEREO' put: 2;
 "not used in esp32
 		at: 'ONEWIRE_FEATURE' put: 16r01;
 		at: 'DHT_FEATURE' put: 16r02;
@@ -152,7 +150,28 @@ TMXNano2040Driver >> initConstantsDict [
 ]
 
 { #category : 'initialization' }
-TMXNano2040Driver >> initDispatchDict [ 
+TMXNano2040Driver >> initDispatchDict [
+	"for esp32"
+	dispatchDict := {
+		((self idFrom: 'LOOP_COMMAND') -> #announceLoopbackReport:).
+		((self idFrom: 'DEBUG_PRINT') -> #x).
+		((self idFrom: 'DIGITAL_REPORT') -> #announceDigitalInput:). 
+		((self idFrom: 'ANALOG_REPORT') -> #announceAnalogInput:).
+		((self idFrom: 'FIRMWARE_REPORT') -> #announceFirmwareReport:).
+		"(self idFrom: 'I_AM_HERE_REPORT' -> #announceIAMHere:)."
+		((self idFrom: 'SERVO_UNAVAILABLE') -> #announceServoUnavailable:).
+		((self idFrom: 'I2C_TOO_FEW_BYTES_RCVD') -> #announceI2CTooFewBytesRcvd: ).
+		((self idFrom: 'I2C_TOO_MANY_BYTES_RCVD') -> #announceI2CTooManyBytesRcvd:).
+		((self idFrom: 'I2C_READ_REPORT') -> #announceI2CReadReport:).
+		((self idFrom: 'SONAR_DISTANCE') -> #announceSonarDistance:).
+		"(12 -> #announceIMUReport)."
+		"(13 -> #announceMicrophoneReport:)."
+		((self idFrom: 'DHT_REPORT') -> #announceDHTReport:).
+		((self idFrom: 'SPI_REPORT') -> #announceSPIReport:)	.
+		"((self idFrom: 'TOUCH_Report') -> #announceTouchReport)."
+
+		(99 -> #announceDebugPrint:).
+		} asDictionary.
 ]
 
 { #category : 'initialization' }
