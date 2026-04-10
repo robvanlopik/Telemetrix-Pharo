@@ -1,3 +1,6 @@
+"
+I implement a SerialStream that echoes all input. For this I dress up a SharedQueue with the appropriate methods. Used in tests
+"
 Class {
 	#name : 'TMXEchoPort',
 	#superclass : 'Object',

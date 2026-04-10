@@ -108,5 +108,5 @@ TMXI2CConnection >> writeWordAt: register data: aWord [
 	| payload |
 	
 	payload := ByteArray with: register with: (aWord \\ 256) with: (aWord // 256).
-	driver i2cWrite: ((ByteArray with: register) , payload) toAddress: i2cAddress
+	driver i2cWrite: payload toAddress: i2cAddress
 ]

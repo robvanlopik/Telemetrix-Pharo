@@ -14,6 +14,8 @@ At the same time the latest result are also storen in instance variable. Reading
 
 The specialisation for the different Telemetrix servers is for the most part accomplished through the instance variable constantsDict and dispatchDict that are filled by the initialisation method of my final subclasses.
 
+I check allowed pinnumbers in beXXX methods, but not their actual use. Pots would take care of that.
+
 BTW the easiest way to find the different Telemetrix servers is through the Arduino IDE: look for Telemetrix exexmples. 
 "
 Class {
@@ -114,6 +116,9 @@ TMXDriver >> beAnalogInputOnPin: aPin differential: anInt [
 "this uses the analog pin number 0=4 ! Mode = 3
 anInt can be more than 8 bits. At the end add a 1 to enable reporting"
 	| command |
+	
+	(self pins ai includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be Analog Input'. ^self ].
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE' ) with: aPin with: (self idFrom: 'AT_ANALOG')
 		with: (anInt >> 8) with: (anInt bitAnd: 16rFF) with: 1.
 	self sendCommand: command
@@ -121,7 +126,9 @@ anInt can be more than 8 bits. At the end add a 1 to enable reporting"
 
 { #category : 'pin modes' }
 TMXDriver >> beAnalogOutputOnPin: aPin [
-" actually this is pwm output"
+" actually this is pwm output; don't use because some boars have real analog output"
+(self pins pwm includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be PWM output'. ^self ].
 	self bePWMOutputOnPin: aPin
 ]
 
@@ -130,6 +137,8 @@ TMXDriver >> beDHTOnPin: aPin [
 	"DHT_NEW mode is 31 in Nano2040 and 13 in Uno"
 	| command |
 	
+	(self pins dht includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' does not support DHT'. ^self ].
 	command := ByteArray with: (self idFrom: 'DHT_NEW') with: aPin.
 	self sendCommand: command
 ]
@@ -138,7 +147,9 @@ TMXDriver >> beDHTOnPin: aPin [
 TMXDriver >> beDigitalInputOnPin: aPin [
 	"mode = 0. The 1 at the end enables reporting"
 		| command |
-		
+	
+	(self pins di includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be Digital Input'. ^self ].	
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'AT_INPUT') with: 1.
 	self sendCommand: command
 ]
@@ -147,7 +158,9 @@ TMXDriver >> beDigitalInputOnPin: aPin [
 TMXDriver >> beDigitalInputPullupOnPin: aPin [
 	"mode = 2. The 1 at the end enables reporting"
 		| command |
-		
+	
+	(self pins di includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be Digital Input'. ^self ].	
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') 
 		with: aPin with: (self idFrom: 'AT_INPUT_PULLUP') with: 1.
 	self sendCommand: command
@@ -158,6 +171,8 @@ TMXDriver >> beDigitalOutputOnPin: aPin [
 	"mode = 1"
 		| command |
 	
+	(self pins do includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be Digital Output'. ^self ].
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'AT_OUTPUT').
 	self sendCommand: command
 ]
@@ -201,6 +216,8 @@ TMXDriver >> bePWMOutputOnPin: aPin [
 	"TMX calls this analog output"
 	| command |
 	
+	(self pins pwm includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be PWM output'. ^self ].
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'ANALOG_WRITE').
 	self sendCommand: command
 ]
@@ -208,6 +225,9 @@ TMXDriver >> bePWMOutputOnPin: aPin [
 { #category : 'pin modes' }
 TMXDriver >> beServoOutputOnPin: aPin [
 	"pulses in microseconds)"
+	
+	(self pins servo includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be servo output'. ^self ].
 	self beServoOutputOnPin: aPin minPulse: 544  maxPulse: 2400
 ]
 
@@ -217,6 +237,8 @@ TMXDriver >> beServoOutputOnPin: aPin minPulse: int1 maxPulse: int2 [
 	minPulse eand maxPulse as 16 bits number, bigendian (if I am right.."
 	| command |
 	
+	(self pins servo includes: aPin) ifFalse: 
+		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be servo output'. ^self ].
 	command := ByteArray with: (self idFrom: 'SERVO_ATTACH') with: aPin 
 		with: ((int1 bitAnd: 16rFF00) >> 8) with: (int1 bitAnd: 16rFF)
 		with: ((int2 bitAnd: 16rFF00) >> 8) with: (int2 bitAnd: 16rFF).
