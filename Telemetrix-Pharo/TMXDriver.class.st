@@ -33,7 +33,8 @@ Class {
 		'sonarData',
 		'status',
 		'dispatchDict',
-		'pins'
+		'pins',
+		'steppers'
 	],
 	#category : 'Telemetrix-Pharo-Core',
 	#package : 'Telemetrix-Pharo',
@@ -258,6 +259,18 @@ TMXDriver >> beSonarWithTrigger: pin1 echo: pin2 [
 	
 ]
 
+{ #category : 'accessing' }
+TMXDriver >> constantsDict [
+
+	^ constantsDict
+]
+
+{ #category : 'accessing' }
+TMXDriver >> constantsDict: anObject [
+
+	constantsDict := anObject
+]
+
 { #category : 'pin modes' }
 TMXDriver >> detachServoFromPin: aPin [
 	"not sure what this does
@@ -347,6 +360,12 @@ TMXDriver >> disableDigitalReportingOnPin: aPin [
 TMXDriver >> dispatchDict [
 
 	^ dispatchDict
+]
+
+{ #category : 'accessing' }
+TMXDriver >> dispatchDict: anObject [
+
+	dispatchDict := anObject
 ]
 
 { #category : 'sonar' }
@@ -466,6 +485,7 @@ TMXDriver >> initialize [
 	constantsDict := Dictionary new.
 	status := TMXStatus new.
 	pins := TMXPins new.
+	steppers := Dictionary new. " indexed by stepper id, values TMXStepper instances"
 
 	
 ]
@@ -615,6 +635,12 @@ TMXDriver >> openSPI [
 TMXDriver >> pins [
 
 	^ pins
+]
+
+{ #category : 'accessing' }
+TMXDriver >> pins: anObject [
+
+	pins := anObject
 ]
 
 { #category : 'io protocols' }
@@ -769,6 +795,18 @@ TMXDriver >> status [
 TMXDriver >> status: anObject [
 
 	status := anObject
+]
+
+{ #category : 'accessing' }
+TMXDriver >> steppers [
+
+	^ steppers
+]
+
+{ #category : 'accessing' }
+TMXDriver >> steppers: anObject [
+
+	steppers := anObject
 ]
 
 { #category : 'finalization' }
