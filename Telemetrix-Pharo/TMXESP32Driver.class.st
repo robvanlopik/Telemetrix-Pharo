@@ -162,6 +162,7 @@ TMXESP32Driver >> initConstantsDict [
 		at: 'MAX_DHTS' put: 6;
 		at: 'DHT_DATA' put: 0;
 		at: 'DHT_ERROR' put: 1;
+		at: 'MAX_STEPPERS' put: 4;
 "not used in esp32
 		at: 'ONEWIRE_FEATURE' put: 16r01;
 		at: 'DHT_FEATURE' put: 16r02;

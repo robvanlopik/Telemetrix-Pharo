@@ -103,6 +103,7 @@ at: 'AT_SERVO' put: 4;
 at: 'AT_SONAR' put: 5;
 at: 'AT_DHT' put: 6;
 at: 'AT_MODE_NOT_SET' put: 255;
+at: ' MAX_STEPPERS' put: 8;
 at: 'MAX_SONARS' put: 6;
 at: 'MAX_DHTS' put: 6;
 at: 'DHT_ERROR' put: 1;

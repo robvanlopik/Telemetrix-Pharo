@@ -128,6 +128,7 @@ TMXNano2040Driver >> initConstantsDict [
 		at: 'AT_NEO_PIXEL' put: 10;
 		at: 'AT_MODE_NOT_SET' put: 255;
 
+		at: ' MAX_STEPPERS' put: 0; " is that correct>"
 		at: 'MAX_SONARS' put: 6;
 		at: 'MAX_DHTS' put: 2;
 		at: 'DHT_DATA' put: 0;

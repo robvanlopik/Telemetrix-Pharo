@@ -655,6 +655,30 @@ TMXDriver >> pwmValue: aNumber intoPin: aPin [
 	self sendCommand: command
 ]
 
+{ #category : 'as yet unclassified' }
+TMXDriver >> registerStepperOn: pinArray type: aTypeNr activate: aBool [
+	"register a stepper with the device (SET_PIN_MODE_STEPPER)" 
+	
+| stepper stepperId command|
+
+stepperId:= steppers size + 1.
+(stepperId > self idFrom: 'MAX_STEPPERS' ) ifTrue: [ 
+		 InformativeNotification signal: 'max number of steppers exceeded'. ^self  ].
+stepper := TMXStepper new
+	id: stepperId;
+	driver: self;
+	activated: aBool.
+
+	command := ByteArray new: 7 withAll: 0.
+	command at: 1 put: (self idFrom: 'Set_IN_MODE_STEPPER').
+	command at: 2 put: stepperId.
+	1 to: pinArray size do: [ :i | command at: (2 + i) put: (pinArray at: 1) ].
+	aBool ifTrue: [ command at: 7 put: 1 ].
+	
+	self sendCommand: command
+
+]
+
 { #category : 'initialization' }
 TMXDriver >> reset [
 	| command |
