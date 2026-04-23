@@ -175,8 +175,16 @@ TMXListener >> announceSonarDistance: data [
 TMXListener >> announceStepperCurrentPosition: data [
 	"STEPPER_CURRENT_POSITION"
 	
-		| announcement |
+		| announcement position|
+		position := data longAt: 2 bigEndian: true.
 		announcement := TMXStepperCurrentPosition new
+					id: data first;
+					position: position;
+					timestamp: DateAndTime now;
+					yourself.
+		(driver steppers at: data first) currentPosition: announcement.
+	self doAnnouncement: announcement			
+		
 			
 	
 	
@@ -195,11 +203,15 @@ TMXListener >> announceStepperDistanceToGo: data [
 
 { #category : 'as yet unclassified' }
 TMXListener >> announceStepperRunCompleteReport: data [
-	"STEPPER_RUN_COMPLETE_REPORT"
+	"STEPPER_RUN_COMPLETE_REPORT, no parameter, just the timestamp!"
 	
 		| announcement |
 		announcement := TMXStepperRunCompleteReport new
-			
+			id: data first;
+			timestamp: DateAndTime now;
+			yourself.
+		(driver steppers at: data first) runCompleted: announcement.
+		self doAnnouncement: announcement			
 	
 	
 ]
@@ -218,12 +230,16 @@ TMXListener >> announceStepperRunningReport: data [
 { #category : 'as yet unclassified' }
 TMXListener >> announceStepperTargetPosition: data [
 	"STEPPER_TARGET_POSITION"
-	
-		| announcement |
-		announcement := TMXStepperTargetPosition new
-			
-	
-	
+
+	| announcement position |
+	position := data unsignedLongAt: 2 bigEndian: true.
+	announcement := TMXStepperTargetPosition new
+		                id: data first;
+		                targetPosition: position;
+		                timestamp: DateAndTime now;
+		                yourself.
+	(driver steppers at: data first) targetPosition: announcement.
+	self doAnnouncement: announcement
 ]
 
 { #category : 'accessing' }

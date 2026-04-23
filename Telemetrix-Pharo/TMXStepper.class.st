@@ -14,7 +14,12 @@ Class {
 		'isRunning',
 		'maxSpeed',
 		'speed',
-		'acceleration'
+		'acceleration',
+		'targetPosition',
+		'currentPosition',
+		'runCompleted',
+		'running',
+		'distanceToGo'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -46,6 +51,18 @@ TMXStepper >> currentPosition [
 	driver sendCommand: command
 ]
 
+{ #category : 'accessing' }
+TMXStepper >> currentPosition1 [
+
+	^ currentPosition
+]
+
+{ #category : 'accessing' }
+TMXStepper >> currentPosition: anObject [
+
+	currentPosition := anObject
+]
+
 { #category : 'operations' }
 TMXStepper >> disableOutputs [
 	| command |
@@ -56,10 +73,7 @@ TMXStepper >> disableOutputs [
 { #category : 'enquiries' }
 TMXStepper >> distanceToGo [
 
-	" generates announcement "
-	| command |
-	command := ByteArray with: (driver idFrom: 'STEPPER_GET_DISTANCE_TO_GO') with: id.
-	driver sendCommand: command
+	^distanceToGo
 ]
 
 { #category : 'accessing' }
@@ -78,6 +92,25 @@ TMXStepper >> driver: anObject [
 TMXStepper >> enableOutputs [
 	| command |
 	command := ByteArray with: (driver idFrom: 'STEPPER_ENABLE_OUTPUTS') with: id.
+	driver sendCommand: command
+]
+
+{ #category : 'enquiries' }
+TMXStepper >> getDistanceToGo [
+
+	" generates announcement "
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPPER_GET_DISTANCE_TO_GO') with: id.
+	driver sendCommand: command
+]
+
+{ #category : 'enquiries' }
+TMXStepper >> getTargetPosition [
+	"Request the most recently set target position from the server."
+	"callback/announcement: TMXStepperTargetPosition"
+
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPER_GET_TARGET_POSITION') with: id.
 	driver sendCommand: command
 ]
 
@@ -123,7 +156,7 @@ TMXStepper >> maxSpeed [
 	^ maxSpeed
 ]
 
-{ #category : 'operations' }
+{ #category : 'accessing' }
 TMXStepper >> maxSpeed: a16bitInt [
 	"Sets the maximum permitted speed. The stepper_run() function will accelerate
         up to the speed set by this function. Caution: the maximum speed achievable depends on your processor and clock speed.The default maxSpeed is 1 step per second. speed = 1-1000.
@@ -156,6 +189,30 @@ TMXStepper >> runAtMaxSpeed [
 ]
 
 { #category : 'accessing' }
+TMXStepper >> runCompleted [
+
+	^ runCompleted
+]
+
+{ #category : 'accessing' }
+TMXStepper >> runCompleted: anObject [
+
+	runCompleted := anObject
+]
+
+{ #category : 'accessing' }
+TMXStepper >> running [
+
+	^ running
+]
+
+{ #category : 'accessing' }
+TMXStepper >> running: anObject [
+
+	running := anObject
+]
+
+{ #category : 'accessing' }
 TMXStepper >> speed [
 
 	^ speed
@@ -165,4 +222,16 @@ TMXStepper >> speed [
 TMXStepper >> speed: anObject [
 
 	speed := anObject
+]
+
+{ #category : 'accessing' }
+TMXStepper >> targetPosition [
+
+	^ targetPosition
+]
+
+{ #category : 'accessing' }
+TMXStepper >> targetPosition: anObject [
+
+	targetPosition := anObject
 ]
