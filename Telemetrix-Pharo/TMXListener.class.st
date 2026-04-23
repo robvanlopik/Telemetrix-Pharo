@@ -171,6 +171,61 @@ TMXListener >> announceSonarDistance: data [
 	self doAnnouncement: announcement
 ]
 
+{ #category : 'as yet unclassified' }
+TMXListener >> announceStepperCurrentPosition: data [
+	"STEPPER_CURRENT_POSITION"
+	
+		| announcement |
+		announcement := TMXStepperCurrentPosition new
+			
+	
+	
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceStepperDistanceToGo: data [
+	"STEPPER_DISTANCE_TO_GO"
+	
+		| announcement |
+		announcement := TMXStepperDistanceToGo new
+			
+	
+	
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceStepperRunCompleteReport: data [
+	"STEPPER_RUN_COMPLETE_REPORT"
+	
+		| announcement |
+		announcement := TMXStepperRunCompleteReport new
+			
+	
+	
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceStepperRunningReport: data [
+	"STEPPER_RUNNING_REPORT"
+	
+		| announcement |
+		announcement := TMXStepperRunningReport new
+			
+	
+	
+]
+
+{ #category : 'as yet unclassified' }
+TMXListener >> announceStepperTargetPosition: data [
+	"STEPPER_TARGET_POSITION"
+	
+		| announcement |
+		announcement := TMXStepperTargetPosition new
+			
+	
+	
+]
+
 { #category : 'accessing' }
 TMXListener >> announcer [
 	^announcer

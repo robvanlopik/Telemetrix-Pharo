@@ -197,6 +197,8 @@ TMXESP32Driver >> initDispatchDict [
 		((self idFrom: 'DHT_REPORT') -> #announceDHTReport:).
 		((self idFrom: 'SPI_REPORT') -> #announceSPIReport:)	.
 		((self idFrom: 'TOUCH_Report') -> #announceTouchReport).
+		"stepper"
+		((self idFrom: 'STePPER_DISTANCE_TO_GO') -> #announceDistanceToGo).
 		"one wire"
 		(99 -> #announceDebugPrint:).
 		} asDictionary.
