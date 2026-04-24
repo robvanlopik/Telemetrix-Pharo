@@ -32,6 +32,12 @@ TMXStepper >> acceleration [
 ]
 
 { #category : 'accessing' }
+TMXStepper >> acceleration1: anObject [
+
+	acceleration := anObject
+]
+
+{ #category : 'accessing' }
 TMXStepper >> acceleration: anInt [
 	"sets the acceleration in the stepper and in the instance. 1-1000"
 	| command |
@@ -42,17 +48,8 @@ TMXStepper >> acceleration: anInt [
 	acceleration := anInt
 ]
 
-{ #category : 'enquiries' }
-TMXStepper >> currentPosition [
-
-	" generates announcement "
-	| command |
-	command := ByteArray with: (driver idFrom: 'STEPPER_GET_CURRENT_POSITION') with: id.
-	driver sendCommand: command
-]
-
 { #category : 'accessing' }
-TMXStepper >> currentPosition1 [
+TMXStepper >> currentPosition [
 
 	^ currentPosition
 ]
@@ -70,10 +67,27 @@ TMXStepper >> disableOutputs [
 	driver sendCommand: command
 ]
 
-{ #category : 'enquiries' }
+{ #category : 'accessing' }
 TMXStepper >> distanceToGo [
+	"synchronous getter"
+	
+	| requestTime retries|
+	requestTime := DateAndTime now.
+	self getDistanceToGo.
+	retries := 10.
+	[ retries > 10] whileTrue: [  | event |
+			event := driver steppers at: id.
+			(event timestamp > requestTime) ifTrue: [ ^event  distanceToGo ].
+			 retries := retries - 1.].
+	"no response?"
+	Error signal: 'Timeout waiting for distancetoGo'	
+	
+]
 
-	^distanceToGo
+{ #category : 'accessing' }
+TMXStepper >> distanceToGo: anObject [
+
+	distanceToGo := anObject
 ]
 
 { #category : 'accessing' }
@@ -92,6 +106,15 @@ TMXStepper >> driver: anObject [
 TMXStepper >> enableOutputs [
 	| command |
 	command := ByteArray with: (driver idFrom: 'STEPPER_ENABLE_OUTPUTS') with: id.
+	driver sendCommand: command
+]
+
+{ #category : 'enquiries' }
+TMXStepper >> getCurrentPosition [
+
+	" generates announcement "
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPPER_GET_CURRENT_POSITION') with: id.
 	driver sendCommand: command
 ]
 
@@ -154,6 +177,12 @@ TMXStepper >> isRunning: anObject [
 TMXStepper >> maxSpeed [
 
 	^ maxSpeed
+]
+
+{ #category : 'accessing' }
+TMXStepper >> maxSpeed1: anObject [
+
+	maxSpeed := anObject
 ]
 
 { #category : 'accessing' }
