@@ -11,15 +11,15 @@ Class {
 	#instVars : [
 		'id',
 		'driver',
-		'isRunning',
+		'isRunningCB',
 		'maxSpeed',
 		'speed',
 		'acceleration',
-		'targetPosition',
-		'currentPosition',
+		'targetPositionCB',
+		'currentPositionCB',
 		'runCompleted',
 		'running',
-		'distanceToGo'
+		'distanceToGoCB'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
@@ -50,14 +50,18 @@ TMXStepper >> acceleration: anInt [
 
 { #category : 'accessing' }
 TMXStepper >> currentPosition [
-
-	^ currentPosition
+	"synchronous answer"
+	| timestampStart |
+	timestampStart := DateAndTime now.
+	self getCurrentPosition.
+	1 to: 10 do: [ (currentPositionCB timestamp > timestampStart) ifTrue: [ ^currentPositionCB position].
+						20 milliSeconds wait].
+	self notify: 'Get current position timed out'.
 ]
 
 { #category : 'accessing' }
-TMXStepper >> currentPosition: anObject [
-
-	currentPosition := anObject
+TMXStepper >> currentPositionCB: aValue [
+	currentPositionCB := aValue
 ]
 
 { #category : 'operations' }
@@ -71,23 +75,21 @@ TMXStepper >> disableOutputs [
 TMXStepper >> distanceToGo [
 	"synchronous getter"
 	
-	| requestTime retries|
+	| requestTime|
 	requestTime := DateAndTime now.
 	self getDistanceToGo.
-	retries := 10.
-	[ retries > 10] whileTrue: [  | event |
-			event := driver steppers at: id.
-			(event timestamp > requestTime) ifTrue: [ ^event  distanceToGo ].
-			 retries := retries - 1.].
-	"no response?"
+	1 to: 10 do:  [ (distanceToGoCB timestamp > requestTime ) ifTrue: [  ^distanceToGoCB distance].
+							20 milliSeconds wait ].
+			
 	Error signal: 'Timeout waiting for distancetoGo'	
 	
 ]
 
 { #category : 'accessing' }
-TMXStepper >> distanceToGo: anObject [
+TMXStepper >> distanceToGoCB: anAnnouncement [
 
-	distanceToGo := anObject
+	distanceToGoCB := anAnnouncement 
+
 ]
 
 { #category : 'accessing' }
@@ -163,14 +165,29 @@ TMXStepper >> initialize [
 
 { #category : 'accessing' }
 TMXStepper >> isRunning [
-
-	^ isRunning
+	"synchronous answer"
+	| timestampStart |
+	timestampStart := DateAndTime now.
+	self isRunningEnquiry.
+	1 to: 10 do: [ (isRunningCB timestamp > timestampStart) ifTrue: [ ^isRunningCB isRunnning ].
+						20 milliSeconds wait].
+	self notify: 'Get running report timed out'.
 ]
 
 { #category : 'accessing' }
-TMXStepper >> isRunning: anObject [
+TMXStepper >> isRunningCB: anObject [
 
-	isRunning := anObject
+	isRunningCB := anObject
+]
+
+{ #category : 'enquiries' }
+TMXStepper >> isRunningEnquiry [
+	"is the motor running - STEPPER_IS_RUNNING
+	"
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPPER_GIS_RUNNING') with: id.
+	driver sendCommand: command
+	
 ]
 
 { #category : 'accessing' }
@@ -256,11 +273,15 @@ TMXStepper >> speed: anObject [
 { #category : 'accessing' }
 TMXStepper >> targetPosition [
 
-	^ targetPosition
+		| timestampStart |
+	timestampStart := DateAndTime now.
+	self getTargetPosition.
+	1 to: 10 do: [ (targetPositionCB timestamp > timestampStart) ifTrue: [ ^targetPositionCB position].
+						20 milliSeconds wait].
+	self notify: 'Get target position timed out'.
 ]
 
 { #category : 'accessing' }
-TMXStepper >> targetPosition: anObject [
-
-	targetPosition := anObject
+TMXStepper >> targetPositionCB: anAnnouncement [
+	targetPositionCB := anAnnouncement
 ]

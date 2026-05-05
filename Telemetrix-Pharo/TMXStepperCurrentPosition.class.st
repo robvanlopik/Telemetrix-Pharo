@@ -7,3 +7,15 @@ Class {
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
 }
+
+{ #category : 'accessing' }
+TMXStepperCurrentPosition >> position [
+
+	^ position
+]
+
+{ #category : 'accessing' }
+TMXStepperCurrentPosition >> position: anObject [
+
+	position := anObject
+]

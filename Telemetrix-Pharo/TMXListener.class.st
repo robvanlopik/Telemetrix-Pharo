@@ -182,7 +182,7 @@ TMXListener >> announceStepperCurrentPosition: data [
 					position: position;
 					timestamp: DateAndTime now;
 					yourself.
-		(driver steppers at: data first) currentPosition: announcement.
+		(driver steppers at: data first) currentPositionCB: announcement.
 	self doAnnouncement: announcement			
 		
 			
@@ -194,9 +194,20 @@ TMXListener >> announceStepperCurrentPosition: data [
 TMXListener >> announceStepperDistanceToGo: data [
 	"STEPPER_DISTANCE_TO_GO"
 	
-		| announcement |
+		| announcement distance|
+
+		distance := data longAt: 2 bigEndian: true.
 		announcement := TMXStepperDistanceToGo new
+					id: data first;
+					distance: distance;
+					timestamp: DateAndTime now;
+					yourself.
+		(driver steppers at: data first) distanceToGoCB: announcement.
+	self doAnnouncement: announcement			
+		
 			
+	
+		
 	
 	
 ]
@@ -220,8 +231,17 @@ TMXListener >> announceStepperRunCompleteReport: data [
 TMXListener >> announceStepperRunningReport: data [
 	"STEPPER_RUNNING_REPORT"
 	
-		| announcement |
+		| announcement runState |
+		runState := false.
+		((data at: 2)  = 1) ifTrue: [ runState := true].
 		announcement := TMXStepperRunningReport new
+			id: data first;
+			isRunning: runState;
+			timestamp: DateAndTime now;
+			yourself.
+		(driver steppers at: data first) isRunningCB: announcement.
+	self doAnnouncement: announcement
+					
 			
 	
 	
@@ -238,7 +258,7 @@ TMXListener >> announceStepperTargetPosition: data [
 		                targetPosition: position;
 		                timestamp: DateAndTime now;
 		                yourself.
-	(driver steppers at: data first) targetPosition: announcement.
+	(driver steppers at: data first) targetPositionCB: announcement.
 	self doAnnouncement: announcement
 ]
 
