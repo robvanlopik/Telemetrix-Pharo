@@ -4,6 +4,9 @@ I am created by a command to the driver #....
 This returns my #id.
 All further stepper methods are implemented by me.
 
+I keep track of some parameters like speed and maxSpeed.
+Other parameeteres, like position are reqested from the deevice but cached locally and can also be reqested sybchrobnously (1.e. waiting for the callback answer)
+
 "
 Class {
 	#name : 'TMXStepper',
@@ -17,7 +20,7 @@ Class {
 		'acceleration',
 		'targetPositionCB',
 		'currentPositionCB',
-		'runCompleted',
+		'runCompletedCB',
 		'running',
 		'distanceToGoCB'
 	],
@@ -129,6 +132,11 @@ TMXStepper >> getDistanceToGo [
 	driver sendCommand: command
 ]
 
+{ #category : 'as yet unclassified' }
+TMXStepper >> getMaxSpeed [
+	^maxSpeed
+]
+
 { #category : 'enquiries' }
 TMXStepper >> getTargetPosition [
 	"Request the most recently set target position from the server."
@@ -155,11 +163,15 @@ TMXStepper >> id: anObject [
 TMXStepper >> initialize [
 
 	super initialize.
-	isRunning := false.
+	
 	maxSpeed := 1.
 	speed := 0.
 	acceleration := 0.
-	
+	"the callbacks/announcemenets"
+	isRunningCB := TMXStepperRunningReport new timestamp: DateAndTime now.
+	targetPositionCB := TMXStepperTargetPosition new timestamp: DateAndTime now.
+	currentPositionCB := TMXStepperCurrentPosition new timestamp: DateAndTime now.
+	distanceToGoCB := TMXStepperDistanceToGo new timestamp: DateAndTime now.
 	
 ]
 
@@ -217,9 +229,39 @@ TMXStepper >> maxSpeed: a16bitInt [
 ]
 
 { #category : 'operations' }
+TMXStepper >> moveRelative: aDistance [
+	"set new target relative to current position. STEPPER_MOVE. Only sets tartget"
+	| command polarity|
+	polarity := 0. "means positive"
+	aDistance < 0 ifTrue: [ polarity := 1 ].
+	command := ByteArray new: 7.
+	command at: 1 put: (driver idFrom: 'STEPPER_MOVE').
+	command at: 2 put: id.
+	command longAt: 3 put: aDistance abs bigEndian: true.
+	command at: 7 put: polarity.
+	driver sendCommand: command
+	
+	
+]
+
+{ #category : 'path commands' }
+TMXStepper >> moveTo: aPosition [
+	"mover to an absolute position. STEPPER_NOVE_TO. Only sets target; #run will actially move it"
+	| command polarity |
+	polarity := 0.
+	aPosition < 0 ifTrue: [ polarity := 1 ].
+	command := ByteArray new: 7.
+	command at: 1 put: (driver idFrom: 'STEPPER_MOVE_TO').
+	command longAt: 7 put: aPosition abs bigEndian: true.
+	
+	
+]
+
+{ #category : 'operations' }
 TMXStepper >> run [
 	"This method steps the selected motor based on the current speed.
-        Once called, the server will continuously attempt to step the motor."
+    Once called, the server will continuously attempt to step the motor.
+	Completion is signalled by an announcement TMXStepperRunCompleteReport"
 	| command |
 	command := ByteArray with: (driver idFrom: 'STEPPER_RUN') with: id.
 	driver sendCommand: command
@@ -234,6 +276,17 @@ TMXStepper >> runAtMaxSpeed [
 	driver sendCommand: command
 ]
 
+{ #category : 'operations' }
+TMXStepper >> runAtSpeedToPosition [
+
+	" Runs the motor at the currently selected speed until the target position is
+        reached.         Does not implement accelerations. Generates
+		generates StepperRunCompleteReport . Target position must be set first"
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPPER_RUN_SPEED') with: id.
+	driver sendCommand: command
+]
+
 { #category : 'accessing' }
 TMXStepper >> runCompleted [
 
@@ -241,9 +294,19 @@ TMXStepper >> runCompleted [
 ]
 
 { #category : 'accessing' }
-TMXStepper >> runCompleted: anObject [
+TMXStepper >> runCompletedCB: anObject [
 
-	runCompleted := anObject
+	runCompletedCB := anObject
+]
+
+{ #category : 'as yet unclassified' }
+TMXStepper >> runCompletedEnquiry [
+	"is the motor running - STEPPER_
+	"
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPPER_IS_RUNNING') with: id.
+	driver sendCommand: command
+	
 ]
 
 { #category : 'accessing' }
@@ -259,15 +322,74 @@ TMXStepper >> running: anObject [
 ]
 
 { #category : 'accessing' }
+TMXStepper >> setAcceleration: anInt [
+	"sets the acceleration in the stepper and in the instance. 1-1000"
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPPER_SET_ACCELERATION') with: id 
+								with: (anInt bitAnd: 16rFF00) >> 8 with: (anInt bitAnd: 16rFF).
+	driver sendCommand: command.
+
+	acceleration := anInt
+]
+
+{ #category : 'initialization' }
+TMXStepper >> setCurrentPosition: aPosition [
+	"Resets the current position of the motor, so that wherever the motor
+        happens to be right now is considered to be the new 0 position. Useful
+        for setting a zero position on a stepper after an initial hardware
+        positioning move. Has the side effect of setting the current motor speed to 0."
+	| command |
+	
+	command := ByteArray new: 6.
+	command at: 1 put: (driver idFrom: 'STEPPER_SET_CURRENT_POSITION'). 
+	command at: 2 put: id.
+	command longAt: 3 put: aPosition bigEndian: true.
+	driver sendCommand: command
+]
+
+{ #category : 'accessing' }
+TMXStepper >> setMaxSpeed: a16bitInt [
+	"Sets the maximum permitted speed. The stepper_run() function will accelerate
+        up to the speed set by this function. Caution: the maximum speed achievable depends on your processor and clock speed.The default maxSpeed is 1 step per second. speed = 1-1000.
+         Caution: Speeds that exceed the maximum speed supported by the processor may
+                  result in non-linear accelerations and decelerations."
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPPER_RUN') with: id 
+								with: (a16bitInt bitAnd: 16rFF00) >> 8 with: (a16bitInt bitAnd: 16rFF).
+	driver sendCommand: command.
+	"and register in the instance"
+	maxSpeed:= a16bitInt
+]
+
+{ #category : 'initialization' }
+TMXStepper >> setSpeed: anInt [
+	"Sets the desired constant speed for use with stepperrunAtMaxSpeed()"
+	
+	| command |
+	command := ByteArray new: 4.
+	command at: 1 put: (driver idFrom: 'STEPPER_SET_SPEED').
+	command at: 2 put: id.
+	command at: 3 put: (anInt bitAnd: 16rFF00) >> 8.
+	command at: 4 put: (anInt bitAnd: 16rFF).
+	driver runCommand: command.
+	speed := anInt.
+	
+]
+
+{ #category : 'accessing' }
 TMXStepper >> speed [
 
 	^ speed
 ]
 
 { #category : 'accessing' }
-TMXStepper >> speed: anObject [
-
-	speed := anObject
+TMXStepper >> stop [
+	"Sets a new target position that causes the stepper
+        to stop as quickly as possible, using the current speed and
+        acceleration parameters."
+	| command |
+	command := ByteArray with: (driver idFrom: 'STEPPER_STOP') with: id.
+	driver runCommand: command
 ]
 
 { #category : 'accessing' }
