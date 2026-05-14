@@ -9,7 +9,7 @@ Class {
 	#tag : 'Core'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'initialization' }
 TMXUnoDriver >> initConstantsDict [ 
 "for Arduino Uno"
 constantsDict
@@ -106,6 +106,7 @@ at: 'AT_MODE_NOT_SET' put: 255;
 at: ' MAX_STEPPERS' put: 8;
 at: 'MAX_SONARS' put: 6;
 at: 'MAX_DHTS' put: 6;
+at: 'MAX_STEPPERS' put: 6;
 at: 'DHT_ERROR' put: 1;
 at: 'ONEWIRE_FEATURE' put: 016r01;
 at: 'DHT_FEATURE' put: 16r02;
@@ -136,6 +137,11 @@ TMXUnoDriver >> initDispatchDict [
 		((self idFrom: 'DHT_REPORT') -> #announceDHTReport:).
 		((self idFrom: 'SPI_REPORT') -> #announceSPIReport:)	.
 		"((self idFrom: 'TOUCH_Report') -> #announceTouchReport). "
+		((self idFrom: 'STEPPER_DISTANCE_TO_GO') -> #announceStepperDistanceToGo).
+		((self idFrom: 'STEPPER_TARGET_POSITION') -> #announceStepperTargetPosition).
+		((self idFrom: 'STEPPER_CURRENT_POSITION') -> #announceStepperCurrentPosition).
+		((self idFrom: 'STEPPER_RUNNING_REPORT') -> #announceStepperRunningReport).
+		((self idFrom: 'STEPPER_RUN_COMPLETE_REPORT') -> #announceStepperRunCompleteReport).
 		"one wire"
 		(99 -> #announceDebugPrint:).
 		} asDictionary.

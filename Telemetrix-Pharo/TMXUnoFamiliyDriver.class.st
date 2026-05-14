@@ -133,6 +133,11 @@ TMXUnoFamiliyDriver >> initDispatchDict [
 		"(13 -> #announceMicrophoneReport:)."
 		((self idFrom: 'DHT_REPORT') -> #announceDHTUnoReport:).
 		((self idFrom: 'SPI_REPORT') -> #announceSPIReport:)	.
+		((self idFrom: 'STEPPER_DISTANCE_TO_GO') -> #announceStepperDistanceToGo).
+		((self idFrom: 'STEPPER_TARGET_POSITION') -> #announceStepperTargetPosition).
+		((self idFrom: 'STEPPER_CURRENT_POSITION') -> #announceStepperCurrentPosition).
+		((self idFrom: 'STEPPER_RUNNING_REPORT') -> #announceRStepperunningReport).
+		((self idFrom: 'STEPPER_RUN_COMPLETE_REPORT') -> #announceStepperRunCompleteReport).
 		(99 -> #announceDebugPrint:).
 		"ONE_WIRE_REPORT"
 		"STEPPERS..."

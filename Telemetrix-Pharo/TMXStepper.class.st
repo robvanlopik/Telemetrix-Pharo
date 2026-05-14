@@ -1,12 +1,22 @@
 "
-I represent a single stepper motor. I am an ojectification like I2CConnection.
+I represent a single stepper motor. I am an objectification like I2CConnection.
 I am created by a command to the driver #....
 This returns my #id.
-All further stepper methods are implemented by me.
+All further stepper methods are implemented by me and passed on to the driver.
 
 I keep track of some parameters like speed and maxSpeed.
 Other parameeteres, like position are reqested from the deevice but cached locally and can also be reqested sybchrobnously (1.e. waiting for the callback answer)
+Worth noting about #speed and #maxSpeed:
+speed goes with runToSpeed and does not use accelaration. It cannot exceed maxSpeed
+maxSpeed is used for accelerated moves. It may not be reached if the stepper has do decelarate already.
 
+stepper types:
+1 = Stepper Driver, 2 driver pins required
+2 = FULL2WIRE  2 wire stepper, 2 motor pins required
+3 = FULL3WIRE 3 wire stepper, such as HDD spindle, 3 motor pins required
+4 = FULL4WIRE, 4 wire full stepper, 4 motor pins required
+6 = HALF3WIRE, 3 wire half stepper, such as HDD spindle,3 motor pins required
+8 = HALF4WIRE, 4 wire half stepper, 4 motor pins required
 "
 Class {
 	#name : 'TMXStepper',
@@ -14,6 +24,7 @@ Class {
 	#instVars : [
 		'id',
 		'driver',
+		'activated',
 		'isRunningCB',
 		'maxSpeed',
 		'speed',
@@ -49,6 +60,16 @@ TMXStepper >> acceleration: anInt [
 	driver sendCommand: command.
 
 	acceleration := anInt
+]
+
+{ #category : 'accessing' }
+TMXStepper >> activated [
+	^activated
+]
+
+{ #category : 'accessing' }
+TMXStepper >> activated: aBool [
+	activated := aBool
 ]
 
 { #category : 'accessing' }
@@ -252,7 +273,10 @@ TMXStepper >> moveTo: aPosition [
 	aPosition < 0 ifTrue: [ polarity := 1 ].
 	command := ByteArray new: 7.
 	command at: 1 put: (driver idFrom: 'STEPPER_MOVE_TO').
-	command longAt: 7 put: aPosition abs bigEndian: true.
+	command at: 2 put: id.
+	command longAt: 3 put: aPosition abs bigEndian: true.
+	command at: 7 put: polarity.
+	driver sendCommand: command
 	
 	
 ]

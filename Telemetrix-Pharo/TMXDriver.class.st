@@ -662,20 +662,21 @@ TMXDriver >> registerStepperOn: pinArray type: aTypeNr activate: aBool [
 | stepper stepperId command|
 
 stepperId:= steppers size + 1.
-(stepperId > self idFrom: 'MAX_STEPPERS' ) ifTrue: [ 
-		 InformativeNotification signal: 'max number of steppers exceeded'. ^self  ].
+(stepperId > (self idFrom: 'MAX_STEPPERS' )) ifTrue: [ 
+		 self inform: 'max number of steppers exceeded'. ^self  ].
 stepper := TMXStepper new
 	id: stepperId;
 	driver: self;
 	activated: aBool.
 
 	command := ByteArray new: 7 withAll: 0.
-	command at: 1 put: (self idFrom: 'Set_IN_MODE_STEPPER').
+	command at: 1 put: (self idFrom: 'SET_PIN_MODE_STEPPER').
 	command at: 2 put: stepperId.
 	1 to: pinArray size do: [ :i | command at: (2 + i) put: (pinArray at: 1) ].
 	aBool ifTrue: [ command at: 7 put: 1 ].
 	
-	self sendCommand: command
+	self sendCommand: command.
+	^stepper
 
 ]
 
@@ -766,6 +767,26 @@ TMXDriver >> setupSonarSubscription [
 			('pin  ', (ann pinNr printString), ' measured distance  ', (ann distance printString), 
 										' at ', (ann timestamp printString )) traceCr] for: self. 
 	
+]
+
+{ #category : 'utilities' }
+TMXDriver >> setupStepperSubscriptions [
+	"setup subscriptions to all Stepper events, write to Tramscript"
+	self when: TMXStepperDistanceToGo do: [ :ann |
+			('id ', (ann id printString), ' disytnce-to-go: ', (ann distanceToGo printString), 
+										' at ', (ann timestamp printString )) traceCr] for: self. 
+	self when: TMXStepperCurrentPosition do: [ :ann |
+			('id ', (ann id printString), ' current-position: ', (ann position printString), 
+										' at ', (ann timestamp printString )) traceCr] for: self. 
+	self when: TMXStepperRunCompleteReport do: [ :ann |
+			('id ', (ann id printString), ' run-completed ', 
+										' at ', (ann timestamp printString )) traceCr] for: self. 
+	self when: TMXStepperRunningReport do: [ :ann |
+			('id ', (ann id printString), ' is-running: ', (ann isRunning printString), 
+										' at ', (ann timestamp printString )) traceCr] for: self. 
+	self when: TMXStepperTargetPosition do: [ :ann |
+			('id ', (ann id printString), ' target-position: ', (ann targetPosition printString), 
+										' at ', (ann timestamp printString )) traceCr] for: self. 
 ]
 
 { #category : 'finalization' }
