@@ -2,20 +2,20 @@ Class {
 	#name : 'TMXStepperRunningReport',
 	#superclass : 'TMXStepperEvent',
 	#instVars : [
-		'isRunnning'
+		'isRunning'
 	],
 	#category : 'Telemetrix-Pharo',
 	#package : 'Telemetrix-Pharo'
 }
 
 { #category : 'accessing' }
-TMXStepperRunningReport >> isRunnning [
+TMXStepperRunningReport >> isRuning [
 
-	^ isRunnning
+	^ isRunning
 ]
 
 { #category : 'accessing' }
-TMXStepperRunningReport >> isRunnning: anObject [
+TMXStepperRunningReport >> isRunning: anObject [
 
-	isRunnning := anObject
+	isRunning := anObject
 ]

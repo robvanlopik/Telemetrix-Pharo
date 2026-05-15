@@ -676,6 +676,7 @@ stepper := TMXStepper new
 	aBool ifTrue: [ command at: 7 put: 1 ].
 	
 	self sendCommand: command.
+	steppers at: stepperId put: stepper.
 	^stepper
 
 ]

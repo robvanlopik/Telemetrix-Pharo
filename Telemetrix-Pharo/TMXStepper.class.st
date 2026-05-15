@@ -78,7 +78,7 @@ TMXStepper >> currentPosition [
 	| timestampStart |
 	timestampStart := DateAndTime now.
 	self getCurrentPosition.
-	1 to: 10 do: [ (currentPositionCB timestamp > timestampStart) ifTrue: [ ^currentPositionCB position].
+	10 timesRepeat: [ (currentPositionCB timestamp > timestampStart) ifTrue: [ ^currentPositionCB position].
 						20 milliSeconds wait].
 	self notify: 'Get current position timed out'.
 ]
@@ -102,7 +102,7 @@ TMXStepper >> distanceToGo [
 	| requestTime|
 	requestTime := DateAndTime now.
 	self getDistanceToGo.
-	1 to: 10 do:  [ (distanceToGoCB timestamp > requestTime ) ifTrue: [  ^distanceToGoCB distance].
+	10 timesRepeat:  [ (distanceToGoCB timestamp > requestTime ) ifTrue: [  ^distanceToGoCB distance].
 							20 milliSeconds wait ].
 			
 	Error signal: 'Timeout waiting for distancetoGo'	
@@ -202,7 +202,7 @@ TMXStepper >> isRunning [
 	| timestampStart |
 	timestampStart := DateAndTime now.
 	self isRunningEnquiry.
-	1 to: 10 do: [ (isRunningCB timestamp > timestampStart) ifTrue: [ ^isRunningCB isRunnning ].
+	10 timesRepeat: [ (isRunningCB timestamp > timestampStart) ifTrue: [ ^isRunningCB isRunnning ].
 						20 milliSeconds wait].
 	self notify: 'Get running report timed out'.
 ]
@@ -218,7 +218,7 @@ TMXStepper >> isRunningEnquiry [
 	"is the motor running - STEPPER_IS_RUNNING
 	"
 	| command |
-	command := ByteArray with: (driver idFrom: 'STEPPER_GIS_RUNNING') with: id.
+	command := ByteArray with: (driver idFrom: 'STEPPER_IS_RUNNING') with: id.
 	driver sendCommand: command
 	
 ]
@@ -395,7 +395,7 @@ TMXStepper >> setSpeed: anInt [
 	command at: 2 put: id.
 	command at: 3 put: (anInt bitAnd: 16rFF00) >> 8.
 	command at: 4 put: (anInt bitAnd: 16rFF).
-	driver runCommand: command.
+	driver sendCommand: command.
 	speed := anInt.
 	
 ]
@@ -413,7 +413,7 @@ TMXStepper >> stop [
         acceleration parameters."
 	| command |
 	command := ByteArray with: (driver idFrom: 'STEPPER_STOP') with: id.
-	driver runCommand: command
+	driver sendCommand: command
 ]
 
 { #category : 'accessing' }
@@ -422,7 +422,7 @@ TMXStepper >> targetPosition [
 		| timestampStart |
 	timestampStart := DateAndTime now.
 	self getTargetPosition.
-	1 to: 10 do: [ (targetPositionCB timestamp > timestampStart) ifTrue: [ ^targetPositionCB position].
+	10 timesRepeat: [ (targetPositionCB timestamp > timestampStart) ifTrue: [ ^targetPositionCB position].
 						20 milliSeconds wait].
 	self notify: 'Get target position timed out'.
 ]
