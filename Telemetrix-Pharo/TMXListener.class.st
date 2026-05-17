@@ -199,7 +199,7 @@ TMXListener >> announceStepperDistanceToGo: data [
 		distance := data longAt: 2 bigEndian: true.
 		announcement := TMXStepperDistanceToGo new
 					id: data first;
-					distance: distance;
+					distanceToGo: distance;
 					timestamp: DateAndTime now;
 					yourself.
 		(driver steppers at: data first) distanceToGoCB: announcement.
@@ -221,7 +221,7 @@ TMXListener >> announceStepperRunCompleteReport: data [
 			id: data first;
 			timestamp: DateAndTime now;
 			yourself.
-		(driver steppers at: data first) runCompleted: announcement.
+		(driver steppers at: data first) runCompletedCB: announcement.
 		self doAnnouncement: announcement			
 	
 	

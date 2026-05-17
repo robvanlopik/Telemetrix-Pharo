@@ -312,25 +312,9 @@ TMXStepper >> runAtSpeedToPosition [
 ]
 
 { #category : 'accessing' }
-TMXStepper >> runCompleted [
-
-	^ runCompleted
-]
-
-{ #category : 'accessing' }
 TMXStepper >> runCompletedCB: anObject [
 
 	runCompletedCB := anObject
-]
-
-{ #category : 'as yet unclassified' }
-TMXStepper >> runCompletedEnquiry [
-	"is the motor running - STEPPER_
-	"
-	| command |
-	command := ByteArray with: (driver idFrom: 'STEPPER_IS_RUNNING') with: id.
-	driver sendCommand: command
-	
 ]
 
 { #category : 'accessing' }

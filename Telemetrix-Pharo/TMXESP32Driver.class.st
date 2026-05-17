@@ -196,13 +196,13 @@ TMXESP32Driver >> initDispatchDict [
 		"(13 -> #announceMicrophoneReport:)."
 		((self idFrom: 'DHT_REPORT') -> #announceDHTReport:).
 		((self idFrom: 'SPI_REPORT') -> #announceSPIReport:)	.
-		((self idFrom: 'TOUCH_Report') -> #announceTouchReport).
+		((self idFrom: 'TOUCH_Report') -> #announceTouchReport:).
 		"stepper"
-		((self idFrom: 'STEPPER_DISTANCE_TO_GO') -> #announceStepperDistanceToGo).
-		((self idFrom: 'STEPPER_TARGET_POSITION') -> #announceStepperTargetPosition).
-		((self idFrom: 'STEPPER_CURRENY_POSITION') -> #announceStepperCurrentPosition).
-		((self idFrom: 'STEPPER_RUNNING_REPORT') -> #announceStepperRunningReport).
-		((self idFrom: 'STEPPER_RUN_COMPLETE_REPORT') -> #announceStepperRunCompleteReport).
+		((self idFrom: 'STEPPER_DISTANCE_TO_GO') -> #announceStepperDistanceToGo:).
+		((self idFrom: 'STEPPER_TARGET_POSITION') -> #announceStepperTargetPosition:).
+		((self idFrom: 'STEPPER_CURRENY_POSITION') -> #announceStepperCurrentPosition:).
+		((self idFrom: 'STEPPER_RUNNING_REPORT') -> #announceStepperRunningReport:).
+		((self idFrom: 'STEPPER_RUN_COMPLETE_REPORT') -> #announceStepperRunCompleteReport:).
 		"one wire"
 		(99 -> #announceDebugPrint:).
 		} asDictionary.
