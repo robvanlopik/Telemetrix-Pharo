@@ -669,11 +669,12 @@ stepper := TMXStepper new
 	driver: self;
 	activated: aBool.
 
-	command := ByteArray new: 7 withAll: 0.
+	command := ByteArray new: 8 withAll: 0.
 	command at: 1 put: (self idFrom: 'SET_PIN_MODE_STEPPER').
 	command at: 2 put: stepperId.
-	1 to: pinArray size do: [ :i | command at: (2 + i) put: (pinArray at: 1) ].
-	aBool ifTrue: [ command at: 7 put: 1 ].
+	command at: 3 put: aTypeNr.
+	1 to: pinArray size do: [ :i | command at: (3 + i) put: (pinArray at: i) ].
+	aBool ifTrue: [ command at: 8 put: 1 ].
 	
 	self sendCommand: command.
 	steppers at: stepperId put: stepper.

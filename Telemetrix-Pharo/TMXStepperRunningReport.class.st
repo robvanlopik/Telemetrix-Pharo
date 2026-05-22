@@ -9,7 +9,7 @@ Class {
 }
 
 { #category : 'accessing' }
-TMXStepperRunningReport >> isRuning [
+TMXStepperRunningReport >> isRunning [
 
 	^ isRunning
 ]

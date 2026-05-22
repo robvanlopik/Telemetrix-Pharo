@@ -102,7 +102,7 @@ TMXStepper >> distanceToGo [
 	| requestTime|
 	requestTime := DateAndTime now.
 	self getDistanceToGo.
-	10 timesRepeat:  [ (distanceToGoCB timestamp > requestTime ) ifTrue: [  ^distanceToGoCB distance].
+	50 timesRepeat:  [ (distanceToGoCB timestamp > requestTime ) ifTrue: [  ^distanceToGoCB distanceToGo].
 							20 milliSeconds wait ].
 			
 	Error signal: 'Timeout waiting for distancetoGo'	
@@ -202,7 +202,7 @@ TMXStepper >> isRunning [
 	| timestampStart |
 	timestampStart := DateAndTime now.
 	self isRunningEnquiry.
-	10 timesRepeat: [ (isRunningCB timestamp > timestampStart) ifTrue: [ ^isRunningCB isRunnning ].
+	100 timesRepeat: [ (isRunningCB timestamp > timestampStart) ifTrue: [ ^isRunningCB isRunning ].
 						20 milliSeconds wait].
 	self notify: 'Get running report timed out'.
 ]
@@ -307,7 +307,7 @@ TMXStepper >> runAtSpeedToPosition [
         reached.         Does not implement accelerations. Generates
 		generates StepperRunCompleteReport . Target position must be set first"
 	| command |
-	command := ByteArray with: (driver idFrom: 'STEPPER_RUN_SPEED') with: id.
+	command := ByteArray with: (driver idFrom: 'STEPPER_RUN_SPEED_TO_POSITION') with: id.
 	driver sendCommand: command
 ]
 
@@ -362,7 +362,7 @@ TMXStepper >> setMaxSpeed: a16bitInt [
          Caution: Speeds that exceed the maximum speed supported by the processor may
                   result in non-linear accelerations and decelerations."
 	| command |
-	command := ByteArray with: (driver idFrom: 'STEPPER_RUN') with: id 
+	command := ByteArray with: (driver idFrom: 'STEPPER_SET_MAX_SPEED') with: id 
 								with: (a16bitInt bitAnd: 16rFF00) >> 8 with: (a16bitInt bitAnd: 16rFF).
 	driver sendCommand: command.
 	"and register in the instance"

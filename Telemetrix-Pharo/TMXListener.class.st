@@ -327,7 +327,7 @@ TMXListener >> listen [
 		buffer := ByteArray new: messageSize.
 		messageStream readInto: buffer startingAt: 1 count: messageSize .
 		"note this special SocketStream message will deliver all bytes asked for, or time out"
-		(' code: ', (buffer printString)) traceCr.
+		(' msg: ', (buffer printString), ' ', DateAndTime now printString) traceCr.
 		self dispatch: buffer].
 ]
 
