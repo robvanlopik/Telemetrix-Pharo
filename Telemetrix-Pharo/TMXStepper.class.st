@@ -83,7 +83,7 @@ TMXStepper >> currentPosition [
 	self notify: 'Get current position timed out'.
 ]
 
-{ #category : 'accessing' }
+{ #category : 'private - accessing' }
 TMXStepper >> currentPositionCB: aValue [
 	currentPositionCB := aValue
 ]
@@ -109,7 +109,7 @@ TMXStepper >> distanceToGo [
 	
 ]
 
-{ #category : 'accessing' }
+{ #category : 'private - accessing' }
 TMXStepper >> distanceToGoCB: anAnnouncement [
 
 	distanceToGoCB := anAnnouncement 
@@ -207,7 +207,7 @@ TMXStepper >> isRunning [
 	self notify: 'Get running report timed out'.
 ]
 
-{ #category : 'accessing' }
+{ #category : 'private - accessing' }
 TMXStepper >> isRunningCB: anObject [
 
 	isRunningCB := anObject
@@ -311,7 +311,7 @@ TMXStepper >> runAtSpeedToPosition [
 	driver sendCommand: command
 ]
 
-{ #category : 'accessing' }
+{ #category : 'private - accessing' }
 TMXStepper >> runCompletedCB: anObject [
 
 	runCompletedCB := anObject
@@ -411,7 +411,7 @@ TMXStepper >> targetPosition [
 	self notify: 'Get target position timed out'.
 ]
 
-{ #category : 'accessing' }
+{ #category : 'private - accessing' }
 TMXStepper >> targetPositionCB: anAnnouncement [
 	targetPositionCB := anAnnouncement
 ]
