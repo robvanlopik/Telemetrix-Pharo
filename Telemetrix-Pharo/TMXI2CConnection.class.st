@@ -5,7 +5,7 @@ I have an extra instance var, channel, that is used by the Uno family of drivers
 I am created by `TMXDriver>>openI2C: address (channel: number)`
 
 Implementation:
-as reactions to I2C requests are asynchronous, we have to buffer those answers. This is done in the instance variable i2cData of the TMSdriver. This is a dictionary with the i2c address as key and the generated announcement, an nstance of TMXI2CEvent, as value. An I2C reaad request loops until the timetsamp of the  announcement is greater than the timestamp off the request. We wait for a maximum of 2000 milliseconds. My first test with the DS1307 RTC device poits to a response time that can amount to 1 second
+as reactions to I2C requests are asynchronous, we have to buffer those answers. This is done in the instance variable i2cData of the TMSdriver. This is a dictionary with the i2c address as key and the generated announcement, an instance of TMXI2CEvent, as value. An I2C read request loops until the timestamp of the  announcement is greater than the timestamp of the request. We wait for a maximum of 2000 milliseconds. My first test with the DS1307 RTC device poits to a response time that can amount to 1 second
 "
 Class {
 	#name : 'TMXI2CConnection',

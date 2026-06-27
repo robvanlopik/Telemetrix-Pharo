@@ -1,7 +1,7 @@
 "
 I hold status information of a specific driver instance
 An instance of myself belongs in the driver instance.
-Main purpose: declutter list of instance varfs of TMXDriver
+Main purpose: declutter list of instance vars of TMXDriver
 "
 Class {
 	#name : 'TMXStatus',

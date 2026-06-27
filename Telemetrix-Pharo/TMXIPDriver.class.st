@@ -1,5 +1,5 @@
 "
-I am the superclass for the IP-based Telemetrix drivers. I facilitate their initialisation by connecting to the quested IP address and port (default 31335)
+I am the superclass for the IP-based Telemetrix drivers. I facilitate their initialisation by connecting to the requested IP address and port (default 31335)
 "
 Class {
 	#name : 'TMXIPDriver',

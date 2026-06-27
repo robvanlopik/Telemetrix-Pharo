@@ -4,7 +4,7 @@ I aim to have the same APÏ as SocketStream, but for the time being this is limi
 Only supports ByteArrays.
 As a starter, output is NOT buffered
 
-Note: #adjustInBuffer uses absolute buffer sizes, making it impracical to change the buffer size in #initialize
+Note: #adjustInBuffer uses absolute buffer sizes, making it impracical to change the buffer size in #initialize. This is also the case in SocketStream in the image
 "
 Class {
 	#name : 'TMXSerialStream',

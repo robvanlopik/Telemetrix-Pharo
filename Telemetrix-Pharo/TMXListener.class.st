@@ -1,5 +1,5 @@
 "
-My task is to listen on the IP port to the device, collect the message and dispatch this to a method corresponding with the message type (the first byte),  to produce the correct announcements.
+My task is to listen on the stream (IP or Serial) to the device, collect the message and dispatch this to a method corresponding to the message type (the first byte),  to produce the correct announcements.
 "
 Class {
 	#name : 'TMXListener',

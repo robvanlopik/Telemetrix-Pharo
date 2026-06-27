@@ -44,6 +44,11 @@ command := (ByteArray with: (self idFrom: 'SET_PIN_MODE') with: pinNr
 	self sendCommand: command
 ]
 
+{ #category : 'initialize-release' }
+TMXESP32Driver >> connectOnIP: address [
+	self connectOnIP: address port: 31336 "not 32335!)"
+]
+
 { #category : 'as yet unclassified' }
 TMXESP32Driver >> disableDacOnPin: aPin [
 
@@ -200,7 +205,7 @@ TMXESP32Driver >> initDispatchDict [
 		"stepper"
 		((self idFrom: 'STEPPER_DISTANCE_TO_GO') -> #announceStepperDistanceToGo:).
 		((self idFrom: 'STEPPER_TARGET_POSITION') -> #announceStepperTargetPosition:).
-		((self idFrom: 'STEPPER_CURRENY_POSITION') -> #announceStepperCurrentPosition:).
+		((self idFrom: 'STEPPER_CURRENT_POSITION') -> #announceStepperCurrentPosition:).
 		((self idFrom: 'STEPPER_RUNNING_REPORT') -> #announceStepperRunningReport:).
 		((self idFrom: 'STEPPER_RUN_COMPLETE_REPORT') -> #announceStepperRunCompleteReport:).
 		"one wire"
@@ -242,4 +247,31 @@ TMXESP32Driver >> pwmValue: aNumber intoPin: aPin [
 	command := ByteArray with: (self idFrom: 'ANALOG_WRITE')
 			with: aPin with: (aNumber >> 8) with: (aNumber bitAnd: 16rFF) .
 	self sendCommand: command
+]
+
+{ #category : 'as yet unclassified' }
+TMXESP32Driver >> registerStepperOn: pinArray type: aTypeNr activate: aBool [
+	"register a stepper with the device (SET_PIN_MODE_STEPPER)" 
+	
+| stepper stepperId command|
+
+stepperId:= steppers size.
+(stepperId > ((self idFrom: 'MAX_STEPPERS' ) - 1)) ifTrue: [ 
+		 self inform: 'max number of steppers exceeded'. ^self  ].
+stepper := TMXStepper new
+	id: stepperId;
+	driver: self;
+	activated: aBool.
+
+	command := ByteArray new: 8 withAll: 0.
+	command at: 1 put: (self idFrom: 'SET_PIN_MODE_STEPPER').
+	command at: 2 put: stepperId.
+	command at: 3 put: aTypeNr.
+	1 to: pinArray size do: [ :i | command at: (3 + i) put: (pinArray at: i) ].
+	aBool ifTrue: [ command at: 8 put: 1 ].
+	
+	self sendCommand: command.
+	steppers at: stepperId put: stepper.
+	^stepper
+
 ]

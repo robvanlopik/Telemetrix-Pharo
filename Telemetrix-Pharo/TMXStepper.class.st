@@ -1,14 +1,14 @@
 "
 I represent a single stepper motor. I am an objectification like I2CConnection.
-I am created by a command to the driver #....
-This returns my #id.
+I am created by a command to the driver #registerStepperOn:type:activate:
+This alsso assigns my #id.
 All further stepper methods are implemented by me and passed on to the driver.
 
 I keep track of some parameters like speed and maxSpeed.
-Other parameeteres, like position are reqested from the deevice but cached locally and can also be reqested sybchrobnously (1.e. waiting for the callback answer)
+Other parameters, like position are reqested from the deevice but cached locally and can also be reqested synchronously (i.e. waiting for the callback answer)
 Worth noting about #speed and #maxSpeed:
 speed goes with runToSpeed and does not use accelaration. It cannot exceed maxSpeed
-maxSpeed is used for accelerated moves. It may not be reached if the stepper has do decelarate already.
+maxSpeed is used for accelerated moves. It may not be reached if the stepper has to decelarate beforehand.
 
 stepper types:
 1 = Stepper Driver, 2 driver pins required
@@ -78,7 +78,7 @@ TMXStepper >> currentPosition [
 	| timestampStart |
 	timestampStart := DateAndTime now.
 	self getCurrentPosition.
-	10 timesRepeat: [ (currentPositionCB timestamp > timestampStart) ifTrue: [ ^currentPositionCB position].
+	100 timesRepeat: [ (currentPositionCB timestamp > timestampStart) ifTrue: [ ^currentPositionCB position].
 						20 milliSeconds wait].
 	self notify: 'Get current position timed out'.
 ]
@@ -164,7 +164,7 @@ TMXStepper >> getTargetPosition [
 	"callback/announcement: TMXStepperTargetPosition"
 
 	| command |
-	command := ByteArray with: (driver idFrom: 'STEPER_GET_TARGET_POSITION') with: id.
+	command := ByteArray with: (driver idFrom: 'STEPPER_GET_TARGET_POSITION') with: id.
 	driver sendCommand: command
 ]
 
@@ -230,19 +230,13 @@ TMXStepper >> maxSpeed [
 ]
 
 { #category : 'accessing' }
-TMXStepper >> maxSpeed1: anObject [
-
-	maxSpeed := anObject
-]
-
-{ #category : 'accessing' }
 TMXStepper >> maxSpeed: a16bitInt [
 	"Sets the maximum permitted speed. The stepper_run() function will accelerate
         up to the speed set by this function. Caution: the maximum speed achievable depends on your processor and clock speed.The default maxSpeed is 1 step per second. speed = 1-1000.
          Caution: Speeds that exceed the maximum speed supported by the processor may
                   result in non-linear accelerations and decelerations."
 	| command |
-	command := ByteArray with: (driver idFrom: 'STEPPER_RUN') with: id 
+	command := ByteArray with: (driver idFrom: 'STEPPER_SET_MAX_SPEED') with: id 
 								with: (a16bitInt bitAnd: 16rFF00) >> 8 with: (a16bitInt bitAnd: 16rFF).
 	driver sendCommand: command.
 	"and register in the instance"
@@ -406,7 +400,7 @@ TMXStepper >> targetPosition [
 		| timestampStart |
 	timestampStart := DateAndTime now.
 	self getTargetPosition.
-	10 timesRepeat: [ (targetPositionCB timestamp > timestampStart) ifTrue: [ ^targetPositionCB position].
+	10 timesRepeat: [ (targetPositionCB timestamp > timestampStart) ifTrue: [ ^targetPositionCB targetPosition].
 						20 milliSeconds wait].
 	self notify: 'Get target position timed out'.
 ]

@@ -1,3 +1,7 @@
+"
+I represent the response to TMXStepper>>getCurrentPosition
+The ivar #position is a 32 bits value
+"
 Class {
 	#name : 'TMXStepperCurrentPosition',
 	#superclass : 'TMXStepperEvent',

@@ -1,5 +1,5 @@
 "
-I drive the TMX demon on a Ardiono Uno. Actually there are lost of different Uno's , that will only differ in the =ir constantsDict. All use the SerialPort
+I drive the TMX demon on a Arduino Uno. Actually there are lots of different Uno's. like the Nano, Lilypad. They will only differ in their constantsDict. All use the SerialPort
 "
 Class {
 	#name : 'TMXUnoFamiliyDriver',

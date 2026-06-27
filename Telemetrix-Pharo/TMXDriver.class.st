@@ -1,7 +1,7 @@
 "
 I am the abstract superclass of all Telemetrix drivers.
 Telemetrix supports a number of data transport methods. 
-Abstract drivers for TCP/IR transport and Serial link are my subclasses.
+Abstract drivers for TCP/IP transport and Serial link are my subclasses.
 
 The transport mechanism must support the Stream protocol. In the IP case we use SocketStream. For the serial port we have TMXSerialStream that supports just enough methods to function for this purpose.
 
@@ -10,9 +10,9 @@ I can be opened on a stream; the subclasses specialze to opening on IP or Serial
 I contain almost all code to implement all Telemetrix functions. Because of the asynchronous nature of the Telemetrix protocol, I am supported by TMXListener.
 
 All results coming from the device are wrapped in announcements, subclasses of TMXAnnouncement.
-At the same time the latest result are also storen in instance variable. Reading these gives the most recent result.
+At the same time the latest result are also stored in an instance variable. Reading these gives the most recent result.
 
-The specialisation for the different Telemetrix servers is for the most part accomplished through the instance variable constantsDict and dispatchDict that are filled by the initialisation method of my final subclasses.
+The specialisation for the different Telemetrix servers is for the most part accomplished through the instance variables constantsDict and dispatchDict that are filled by the initialisation method of my final subclasses.
 
 I check allowed pinnumbers in beXXX methods, but not their actual use. Pots would take care of that.
 

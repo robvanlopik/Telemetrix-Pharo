@@ -1,3 +1,7 @@
+"
+I am the response to TMXStepper>>getDistanceToGo
+The ivar #distanceToGo is 32 bits
+"
 Class {
 	#name : 'TMXStepperDistanceToGo',
 	#superclass : 'TMXStepperEvent',

@@ -1,5 +1,5 @@
 "
-I am the event that is cnstructed when receiving an i2c message.
+I am the event that is constructed when receiving an i2c message.
 The channel parameter is optional, only for those boards that support more i2c channels
 "
 Class {
