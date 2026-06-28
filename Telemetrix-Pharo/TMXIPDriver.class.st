@@ -23,6 +23,13 @@ TMXIPDriver class >> onIP: anIPString [
 		yourself
 ]
 
+{ #category : 'instance creation' }
+TMXIPDriver class >> onIP: anIPString port: aPortNumber [
+	^self new
+		connectOnIP: anIPString port: aPortNumber;
+		yourself
+]
+
 { #category : 'initialize-release' }
 TMXIPDriver >> connectOnIP: anAddress [
 	"connect with default port 31335"

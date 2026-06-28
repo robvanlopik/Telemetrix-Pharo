@@ -15,6 +15,11 @@ TMXSerialDriver class >> isAbstract [
 	^ self == TMXSerialDriver
 ]
 
+{ #category : 'ini' }
+TMXSerialDriver class >> onSerialPort: portString [
+	self new connectOnPort: portString 
+]
+
 { #category : 'connection' }
 TMXSerialDriver >> connectOnPort: aPortName [
 	"pif the port cannot be opened, store nil"

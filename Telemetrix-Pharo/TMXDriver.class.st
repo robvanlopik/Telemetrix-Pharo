@@ -63,13 +63,6 @@ TMXDriver class >> on: aTMXStream [
 	^self basicNew initialize tmxStream: aTMXStream; startListener; yourself
 ]
 
-{ #category : 'instance creation' }
-TMXDriver class >> onIP: anIPString port: aPortNumber [
-	^self new
-		connectOnIP: anIPString port: aPortNumber;
-		yourself
-]
-
 { #category : 'i2c' }
 TMXDriver >> activateI2C [
 	"activate I2C on the default pins, SDA=A4 and SCL=A5

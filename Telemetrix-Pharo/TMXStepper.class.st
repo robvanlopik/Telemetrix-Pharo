@@ -155,7 +155,7 @@ TMXStepper >> getDistanceToGo [
 	driver sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'enquiries' }
 TMXStepper >> getMaxSpeed [
 	^maxSpeed
 ]

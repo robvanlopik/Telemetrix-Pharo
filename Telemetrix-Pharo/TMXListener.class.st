@@ -171,7 +171,7 @@ TMXListener >> announceSonarDistance: data [
 	self doAnnouncement: announcement
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceStepperCurrentPosition: data [
 	"STEPPER_CURRENT_POSITION"
 	
@@ -190,7 +190,7 @@ TMXListener >> announceStepperCurrentPosition: data [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceStepperDistanceToGo: data [
 	"STEPPER_DISTANCE_TO_GO"
 	
@@ -212,7 +212,7 @@ TMXListener >> announceStepperDistanceToGo: data [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceStepperRunCompleteReport: data [
 	"STEPPER_RUN_COMPLETE_REPORT, no parameter, just the timestamp!"
 	
@@ -227,7 +227,7 @@ TMXListener >> announceStepperRunCompleteReport: data [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceStepperRunningReport: data [
 	"STEPPER_RUNNING_REPORT"
 	
@@ -247,7 +247,7 @@ TMXListener >> announceStepperRunningReport: data [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'event handling' }
 TMXListener >> announceStepperTargetPosition: data [
 	"STEPPER_TARGET_POSITION"
 
