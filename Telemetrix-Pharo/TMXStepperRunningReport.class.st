@@ -1,11 +1,16 @@
+"
+I am emitted as a response to #isRunningEnquiry
+Also synchronous: #isRunning
+"
 Class {
 	#name : 'TMXStepperRunningReport',
 	#superclass : 'TMXStepperEvent',
 	#instVars : [
 		'isRunning'
 	],
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }
 
 { #category : 'accessing' }

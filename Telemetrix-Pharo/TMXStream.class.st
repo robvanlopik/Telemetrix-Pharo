@@ -4,6 +4,7 @@ I am supposed to stream the interface to eg serial link or WiFi. For now, for Wi
 Class {
 	#name : 'TMXStream',
 	#superclass : 'Object',
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }

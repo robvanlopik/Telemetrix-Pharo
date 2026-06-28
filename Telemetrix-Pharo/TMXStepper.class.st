@@ -1,14 +1,15 @@
 "
 I represent a single stepper motor. I am an objectification like I2CConnection.
 I am created by a command to the driver #registerStepperOn:type:activate:
-This alsso assigns my #id.
+This also assigns my #id.
 All further stepper methods are implemented by me and passed on to the driver.
 
 I keep track of some parameters like speed and maxSpeed.
 Other parameters, like position are reqested from the deevice but cached locally and can also be reqested synchronously (i.e. waiting for the callback answer)
 Worth noting about #speed and #maxSpeed:
-speed goes with runToSpeed and does not use accelaration. It cannot exceed maxSpeed
+speed goes with runToSpeed and does not use accelaration. It cannot exceed maxSpeed, so this must be set too.
 maxSpeed is used for accelerated moves. It may not be reached if the stepper has to decelarate beforehand.
+
 
 stepper types:
 1 = Stepper Driver, 2 driver pins required
@@ -35,8 +36,9 @@ Class {
 		'running',
 		'distanceToGoCB'
 	],
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }
 
 { #category : 'accessing' }
@@ -363,8 +365,14 @@ TMXStepper >> setMaxSpeed: a16bitInt [
 	maxSpeed:= a16bitInt
 ]
 
+{ #category : 'accessing' }
+TMXStepper >> speed [
+
+	^ speed
+]
+
 { #category : 'initialization' }
-TMXStepper >> setSpeed: anInt [
+TMXStepper >> speed: anInt [
 	"Sets the desired constant speed for use with stepperrunAtMaxSpeed()"
 	
 	| command |
@@ -376,12 +384,6 @@ TMXStepper >> setSpeed: anInt [
 	driver sendCommand: command.
 	speed := anInt.
 	
-]
-
-{ #category : 'accessing' }
-TMXStepper >> speed [
-
-	^ speed
 ]
 
 { #category : 'accessing' }
@@ -400,7 +402,7 @@ TMXStepper >> targetPosition [
 		| timestampStart |
 	timestampStart := DateAndTime now.
 	self getTargetPosition.
-	10 timesRepeat: [ (targetPositionCB timestamp > timestampStart) ifTrue: [ ^targetPositionCB targetPosition].
+	50 timesRepeat: [ (targetPositionCB timestamp > timestampStart) ifTrue: [ ^targetPositionCB targetPosition].
 						20 milliSeconds wait].
 	self notify: 'Get target position timed out'.
 ]

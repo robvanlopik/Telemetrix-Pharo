@@ -1,3 +1,7 @@
+"
+I represent the response from a DHT sensor
+If type == 1 an error occurred
+"
 Class {
 	#name : 'TMXDHTEvent',
 	#superclass : 'TMXAnnouncement',

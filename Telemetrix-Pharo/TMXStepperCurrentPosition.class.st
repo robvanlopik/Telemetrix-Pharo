@@ -8,8 +8,9 @@ Class {
 	#instVars : [
 		'position'
 	],
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }
 
 { #category : 'accessing' }

@@ -1,5 +1,6 @@
 "
-My instance vars contain lists of the various allowed  pins per function
+My instance vars contain lists of the various allowed  pins per function.
+Each specifc driver initializes me with the method #initPins
 "
 Class {
 	#name : 'TMXPins',
@@ -15,8 +16,9 @@ Class {
 		'servo',
 		'cs'
 	],
-	#category : 'Telemetrix-Pharo',
-	#package : 'Telemetrix-Pharo'
+	#category : 'Telemetrix-Pharo-Core',
+	#package : 'Telemetrix-Pharo',
+	#tag : 'Core'
 }
 
 { #category : 'accessing' }
