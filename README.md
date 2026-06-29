@@ -7,7 +7,9 @@ The basic concept is that commands are transmitted to the server and servers rep
 
 This project aims to provide Pharo drivers for these servers (at present ESP32, Arduino Uno and Arduino Nano RP2040 Connect). The basic structure is that commands are sent to the server, while a reading loop converts the messages from the server to Pharo announcements. At the same time these announcements are also stored in an instance variable, so for synchronous use the latest value can always be retrieved.
 
-Telemetrix-Pharo supports IP(Wifi) and serial as transport mechanism (Telemetrix also has BLE).
+Depending on the microprocessor the Telemtrix servers support standard analog and ditial i/o, PWM and servo, i2c, spi (to be done), stepper motors, DHT temperature and humidity sensors, ultrasonic distance sensors, and Neopixel LED strips.
+
+The drivers can also be used with Pots (github://robvanlopik/Pots).
 ## Usage
 The driver is initialized by naming its IP address or Serial port name, like:
 ```smalltalk
