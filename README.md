@@ -19,4 +19,15 @@ uno := TMXUnoDriver onPort: 'COM4'.
 ```
 
 ## Installation
+The package can be installed with:
+```smalltalk
+Metacello new
+	baseline: 'TMX';
+	repository: 'github://robvanlopik/Telemetrix-Pharo:main';
+	load
+```
+The Telemetrix server on the microprocessor can be installed through the Arduino IDE. Look for examples->Telemetrix. In the case of Wifi you have to edit the .ino file for the Wifi SSID and password. In some cases you may need to comment out a line about LED_BUILTIN_SUPPORTED
 ## Notes
+* when I have time I wil add the Raspberry Pi Pico and Pico2. And the Arduino Uno R4, when I have one.
+* Basically the methods `initConstantsDict`, `initPins` and `initDispatchDict` are specific for the different microprocessors and can be derived from the Python and/or C++ sources,
+* The communications protocol has no error checking and little provisions to recover. There is, however, a reset command to restore the sketch to its initial state. In principle Pots should be able to then restore the state of the PotsController (tbd).
