@@ -12,7 +12,8 @@ BaselineOfTMX >> baseline: spec [
 	spec for: #common do: [ 
 		self declareSerialPortOn: spec.
 
-		spec package: 'Telenetrix-Pharo' with: [  spec requires: #('SerialPort') ] ]
+		spec package: 'Telenetrix-Pharo' with: [  spec requires: #('SerialPort') ].
+		spec package: 'Telemetrix-Pharo-Tests' with: [  spec requires: #('Telemetrix-Pharo') ]]
 ]
 
 { #category : 'external projects' }
