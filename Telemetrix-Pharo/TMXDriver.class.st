@@ -63,7 +63,7 @@ TMXDriver class >> on: aTMXStream [
 	^self basicNew initialize tmxStream: aTMXStream; startListener; yourself
 ]
 
-{ #category : 'i2c' }
+{ #category : 'I2C' }
 TMXDriver >> activateI2C [
 	"activate I2C on the default pins, SDA=A4 and SCL=A5
 	Note there is no way to free the pins!
@@ -112,7 +112,7 @@ anInt can be more than 8 bits. At the end add a 1 to enable reporting"
 	| command |
 	
 	(self pins ai includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be Analog Input'. ^self ].
+		[ self inform: 'pin ', aPin asString, ' can not be Analog Input'. ^self ].
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE' ) with: aPin with: (self idFrom: 'AT_ANALOG')
 		with: (anInt >> 8) with: (anInt bitAnd: 16rFF) with: 1.
 	self sendCommand: command
@@ -122,7 +122,7 @@ anInt can be more than 8 bits. At the end add a 1 to enable reporting"
 TMXDriver >> beAnalogOutputOnPin: aPin [
 " actually this is pwm output; don't use because some boars have real analog output"
 (self pins pwm includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be PWM output'. ^self ].
+		[ self inform: 'pin ', aPin asString, ' can not be PWM output'. ^self ].
 	self bePWMOutputOnPin: aPin
 ]
 
@@ -132,7 +132,7 @@ TMXDriver >> beDHTOnPin: aPin [
 	| command |
 	
 	(self pins dht includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' does not support DHT'. ^self ].
+		[ self inform: 'pin ', aPin asString, ' does not support DHT'. ^self ].
 	command := ByteArray with: (self idFrom: 'DHT_NEW') with: aPin.
 	self sendCommand: command
 ]
@@ -143,7 +143,7 @@ TMXDriver >> beDigitalInputOnPin: aPin [
 		| command |
 	
 	(self pins di includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be Digital Input'. ^self ].	
+		[ self inform: 'pin ', aPin asString, ' can not be Digital Input'. ^self ].	
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'AT_INPUT') with: 1.
 	self sendCommand: command
 ]
@@ -154,7 +154,7 @@ TMXDriver >> beDigitalInputPullupOnPin: aPin [
 		| command |
 	
 	(self pins di includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be Digital Input'. ^self ].	
+		[ self inform: 'pin ', aPin asString, ' can not be Digital Input'. ^self ].	
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') 
 		with: aPin with: (self idFrom: 'AT_INPUT_PULLUP') with: 1.
 	self sendCommand: command
@@ -166,7 +166,7 @@ TMXDriver >> beDigitalOutputOnPin: aPin [
 		| command |
 	
 	(self pins do includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be Digital Output'. ^self ].
+		[ self inform: 'pin ', aPin asString, ' can not be Digital Output'. ^self ].
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'AT_OUTPUT').
 	self sendCommand: command
 ]
@@ -211,7 +211,7 @@ TMXDriver >> bePWMOutputOnPin: aPin [
 	| command |
 	
 	(self pins pwm includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be PWM output'. ^self ].
+		[ self inform: 'pin ', aPin asString, ' can not be PWM output'. ^self ].
 	command := ByteArray with: (self idFrom: 'SET_PIN_MODE') with: aPin with: (self idFrom: 'ANALOG_WRITE').
 	self sendCommand: command
 ]
@@ -221,7 +221,7 @@ TMXDriver >> beServoOutputOnPin: aPin [
 	"pulses in microseconds)"
 	
 	(self pins servo includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be servo output'. ^self ].
+		[ self inform: 'pin ', aPin asString, ' can not be servo output'. ^self ].
 	self beServoOutputOnPin: aPin minPulse: 544  maxPulse: 2400
 ]
 
@@ -232,7 +232,7 @@ TMXDriver >> beServoOutputOnPin: aPin minPulse: int1 maxPulse: int2 [
 	| command |
 	
 	(self pins servo includes: aPin) ifFalse: 
-		[ InformativeNotification signal: 'pin ', aPin asString, ' can not be servo output'. ^self ].
+		[ self inform: 'pin ', aPin asString, ' can not be servo output'. ^self ].
 	command := ByteArray with: (self idFrom: 'SERVO_ATTACH') with: aPin 
 		with: ((int1 bitAnd: 16rFF00) >> 8) with: (int1 bitAnd: 16rFF)
 		with: ((int2 bitAnd: 16rFF00) >> 8) with: (int2 bitAnd: 16rFF).
@@ -427,7 +427,7 @@ TMXDriver >> i2cData: anObject [
 	i2cData := anObject
 ]
 
-{ #category : 'i2c' }
+{ #category : 'I2C' }
 TMXDriver >> i2cReadFromAdress: anAddress register: aRegister count: byteCount [
 	"read and stop transmission, ie stop_transmission = true
 	I2C_READ = 11; last ! makes stop-transmission true
@@ -438,7 +438,7 @@ TMXDriver >> i2cReadFromAdress: anAddress register: aRegister count: byteCount [
 			with: anAddress with: aRegister with: byteCount with: 1)]
 ]
 
-{ #category : 'i2c' }
+{ #category : 'I2C' }
 TMXDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister count: byteCount [
 	"read and stop transmission, ie stop_transmission = false
 	I2C_READ = 11
@@ -449,7 +449,7 @@ TMXDriver >> i2cReadRestartTransmissionFromAdress: anAddress register: aRegister
 		with: anAddress with: aRegister with: byteCount with: 0)]
 ]
 
-{ #category : 'i2c' }
+{ #category : 'I2C' }
 TMXDriver >> i2cWrite: aDataArray toAddress: anAddress [
 	"I2C_WRITE = 12; data is a ByteAray"
 	
@@ -602,7 +602,7 @@ TMXDriver >> neopixelShow [
 	self sendCommand: (ByteArray with: (self idFrom: 'SHOW_NEO_PIXELS'))
 ]
 
-{ #category : 'i2c' }
+{ #category : 'I2C' }
 TMXDriver >> openI2C: i2cAddress [
 	"return a I2C Connection as expected by Pots.
 	Fill i2cData with a valid timestamp"
@@ -648,7 +648,7 @@ TMXDriver >> pwmValue: aNumber intoPin: aPin [
 	self sendCommand: command
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'initialization' }
 TMXDriver >> registerStepperOn: pinArray type: aTypeNr activate: aBool [
 	"register a stepper with the device (SET_PIN_MODE_STEPPER)" 
 	
